@@ -1,5 +1,13 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
+import 'logger.dart';
+import 'dart:async';
 
 void main() {
   runApp(MyApp());
@@ -9,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Text to Speech',
+      title: 'Text to Speech and Audio Recorder',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -25,38 +33,209 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final FlutterTts flutterTts = FlutterTts();
-  final TextEditingController textController = TextEditingController();
-  final TextEditingController localeController = TextEditingController();
-  List<String> languages = [];
 
-  Future<void> _speak() async {
+  double _pitch = 0.5; // デフォルトのピッチ
+  double _speed = 0.5; // デフォルトのスピード
+
+  final TextEditingController textController = TextEditingController(text: 'he ate an octopus but the octopus is too big to swallow.');
+  final TextEditingController localeController = TextEditingController(text: 'en-US');
+  static const platform = MethodChannel('com.shirasumaguro.onirepe/beep');
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final FlutterSoundPlayer _player = FlutterSoundPlayer();
+  bool isRecording = false;
+  bool isPlaying = false;
+  Logger logger = Logger();
+  String? filePath;
+  List<String> _languages = [];
+
+  List<Map<String, dynamic>> _voices = [];
+  bool isStopped = false;
+
+  static const int silenceThreshold = 1500; // 3 seconds in milliseconds
+  StreamSubscription? _recorderSubscription;
+  Completer<void>? _recordingCompleter;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeRecorder();
+    logger.initializeLogFilePath();
+    _initializePlayer();
+    _loadLanguages();
+    _loadVoices();
+    _checkPermissions();
+  }
+
+  Future<void> _loadLanguages() async {
+    var languages = await flutterTts.getLanguages;
+    if (languages != null) {
+      setState(() {
+        _languages = List<String>.from(languages);
+      });
+      // Log languages to the console
+      print("Available Languages:");
+      for (var language in _languages) {
+        print(language);
+      }
+    }
+  }
+
+  Future<void> _loadVoices() async {
+    var voices = await flutterTts.getVoices;
+    if (voices != null) {
+      setState(() {
+        // ここで適切にキャストまたはデータ変換を行います。
+        _voices = List<Map<String, dynamic>>.from(voices);
+      });
+      // Log voices to the console
+      print("Available Voices:");
+      for (var voice in _voices) {
+        print("Name: ${voice['name']}, Locale: ${voice['locale']}");
+      }
+    }
+  }
+
+  Future<void> _initializePlayer() async {
+    await _player.openPlayer();
+  }
+
+  Future<void> _checkPermissions() async {
+    PermissionStatus microphoneStatus = await Permission.microphone.request();
+    PermissionStatus storageStatus = await Permission.storage.request();
+
+    if (microphoneStatus.isGranted && storageStatus.isGranted) {
+      print("All permissions granted");
+    } else {
+      print("Permissions not granted");
+    }
+  }
+
+  Future<void> _initializeRecorder() async {
+    await _recorder.openRecorder();
+    _recorder.setSubscriptionDuration(Duration(milliseconds: 100)); // 100ミリ秒ごとに監視
+  }
+
+  Future<void> _startRecording() async {
+    int silenceDuration = 0;
+    int lasttimeduration = 0;
+
+    logger.logWithTimestamp("AAA    _startRecording 1");
+    Directory appDirectory = await getApplicationDocumentsDirectory();
+    filePath = '${appDirectory.path}/${DateTime.now().millisecondsSinceEpoch}.aac';
+    logger.logWithTimestamp("AAA    _startRecording 2 filePath $filePath");
+    if (await Permission.microphone.isGranted) {
+      _recordingCompleter = Completer<void>();
+      await _recorder.startRecorder(toFile: filePath, codec: Codec.aacADTS);
+
+      _recorderSubscription = _recorder.onProgress!.listen((e) {
+        logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration");
+        if (e != null && e.decibels != null && e.decibels! < 22) {
+          silenceDuration = e.duration.inMilliseconds - lasttimeduration;
+          if (silenceDuration >= silenceThreshold) {
+            _stopRecording();
+          }
+        } else {
+          lasttimeduration = e.duration.inMilliseconds;
+        }
+      });
+      logger.logWithTimestamp("AAA    _startRecording 3");
+      setState(() {
+        isRecording = true;
+      });
+
+      // 録音が完了するのを待つ
+      await _recordingCompleter!.future;
+      logger.logWithTimestamp("AAA    _startRecording 4");
+    } else {
+      print('Recording permission is not granted');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    logger.logWithTimestamp("_stopRecording 1");
+    await _recorder.stopRecorder();
+    _recorderSubscription?.cancel();
+    setState(() {
+      isRecording = false;
+    });
+    _recordingCompleter?.complete();
+  }
+
+  Future<void> _playRecording() async {
+    logger.logWithTimestamp("AAA _playRecording 1 filePath $filePath");
+    if (filePath != null) {
+      Completer<void> completer = Completer<void>(); // 再生が完了するのを待つためのCompleter
+
+      await _player.setVolume(1.0); // 音量を設定
+      await _player.startPlayer(
+        fromURI: filePath,
+        whenFinished: () {
+          logger.logWithTimestamp("AAA _playRecording Playback Finished");
+          setState(() {
+            isPlaying = false;
+          });
+          completer.complete(); // 再生が完了したらCompleterを完了させる
+        },
+      );
+      setState(() {
+        isPlaying = true;
+      });
+
+      await completer.future; // 再生が完了するまでここで待機
+    } else {
+      print('No recording found!');
+    }
+  }
+
+  Future<void> _speakAndRecord() async {
     String text = textController.text;
     String locale = localeController.text;
 
     if (locale.isNotEmpty) {
       await flutterTts.setLanguage(locale);
     }
+
+    logger.logWithTimestamp("AAA _speakAndRecord 1");
+    await platform.invokeMethod('playBeepok');
     await flutterTts.speak(text);
+    await flutterTts.awaitSpeakCompletion(true);
+    logger.logWithTimestamp("AAA _speakAndRecord 2");
+    await platform.invokeMethod('playBeepok');
+    await _startRecording();
+    logger.logWithTimestamp("AAA _speakAndRecord 3");
+    await Future.delayed(Duration(seconds: 1));
+    logger.logWithTimestamp("AAA _speakAndRecord 4");
+    await platform.invokeMethod('playBeepok');
+    //await _stopRecording();
+    logger.logWithTimestamp("AAA _speakAndRecord 5");
+    await platform.invokeMethod('playBeepok');
+    await _playRecording();
+    logger.logWithTimestamp("AAA _speakAndRecord 6");
+    await platform.invokeMethod('playBeepok');
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _getLanguages();
+  Future<void> _startLoop() async {
+    isStopped = false;
+    while (!isStopped) {
+      //isStopped = true;
+      await _speakAndRecord();
+      await Future.delayed(Duration(seconds: 1)); // Optional delay between loops
+    }
   }
 
-  Future<void> _getLanguages() async {
-    List<dynamic> langs = await flutterTts.getLanguages;
+  void _stopLoop() {
     setState(() {
-      languages = langs.cast<String>();
+      isStopped = true;
     });
-    print("Available languages: $languages");
   }
 
   @override
   void dispose() {
     textController.dispose();
     localeController.dispose();
+    _recorder.closeRecorder();
+    _player.closePlayer();
+    _recorderSubscription?.cancel();
     super.dispose();
   }
 
@@ -64,12 +243,38 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Text to Speech'),
+        title: Text('Text to Speech and Audio Recorder'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            Slider(
+              min: 0.1,
+              max: 1.0,
+              divisions: 10,
+              label: 'Pitch $_pitch',
+              value: _pitch,
+              onChanged: (double value) {
+                setState(() {
+                  _pitch = value;
+                  flutterTts.setPitch(_pitch);
+                });
+              },
+            ),
+            Slider(
+              min: 0.1,
+              max: 1.0,
+              divisions: 10,
+              label: 'Speed $_speed',
+              value: _speed,
+              onChanged: (double value) {
+                setState(() {
+                  _speed = value;
+                  flutterTts.setSpeechRate(_speed);
+                });
+              },
+            ),
             TextField(
               controller: textController,
               decoration: InputDecoration(
@@ -84,8 +289,23 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _speak,
-              child: Text('Speak'),
+              onPressed: isRecording ? _stopRecording : _startRecording,
+              child: Text(isRecording ? 'Stop Recording' : 'Start Recording'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _playRecording,
+              child: Text('Play Recording'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startLoop,
+              child: Text('Speak, Record and Play'),
+            ),
+            Spacer(),
+            ElevatedButton(
+              onPressed: _stopLoop,
+              child: Text('Stop Loop'),
             ),
           ],
         ),

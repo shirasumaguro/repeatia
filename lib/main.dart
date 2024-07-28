@@ -245,6 +245,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  String? _selectedLanguage;
+  Map<String, dynamic>? _selectedVoice;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -255,6 +258,39 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            DropdownButton<String>(
+              value: _selectedLanguage,
+              hint: Text("Select Language"),
+              items: _languages.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedLanguage = newValue;
+                  flutterTts.setLanguage(newValue!);
+                });
+              },
+            ),
+            if (_voices.isNotEmpty)
+              DropdownButton<Map<String, dynamic>>(
+                value: _selectedVoice,
+                hint: Text("Select Voice"),
+                items: _voices.map((Map<String, dynamic> voice) {
+                  return DropdownMenuItem<Map<String, dynamic>>(
+                    value: voice,
+                    child: Text("${voice['name']} (${voice['locale']})"),
+                  );
+                }).toList(),
+                onChanged: (Map<String, dynamic>? newValue) {
+                  setState(() {
+                    _selectedVoice = newValue;
+                    flutterTts.setVoice(newValue!);
+                  });
+                },
+              ),
             Slider(
               min: 0.1,
               max: 1.0,

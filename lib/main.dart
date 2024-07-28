@@ -66,40 +66,39 @@ class _MyHomePageState extends State<MyHomePage> {
     _checkPermissions();
   }
 
+
+
   Future<void> _loadLanguages() async {
     var languages = await flutterTts.getLanguages;
     if (languages != null) {
       setState(() {
-        _languages = List<String>.from(languages);
+        _languages = List<String>.from(languages)
+            .where((lang) => lang.startsWith('en-')) // Filter languages to those starting with 'en-'
+            .toList();
       });
-      // Log languages to the console
-      print("Available Languages:");
-      for (var language in _languages) {
-        print(language);
-      }
     }
   }
 
   Future<void> _loadVoices() async {
     var voices = await flutterTts.getVoices;
     if (voices != null) {
-      List<Map<String, dynamic>> formattedVoices = [];
-      for (var voice in voices) {
-        // 各要素をMap<String, dynamic>としてキャスト
-        formattedVoices.add(Map<String, dynamic>.from(voice as Map));
-      }
+      try {
+        List<Map<String, dynamic>> formattedVoices = voices.map<Map<String, dynamic>>((voice) {
+          return Map<String, dynamic>.from(voice as Map); // キャストを確実に行います
+        }).toList();
 
-      setState(() {
-        _voices = formattedVoices;
-      });
-
-      // Log voices to the console
-      print("Available Voices:");
-      for (var voice in _voices) {
-        print("Name: ${voice['name']}, Locale: ${voice['locale']}");
+        setState(() {
+          _voices = formattedVoices.where(
+                  (voice) => voice['locale'].startsWith(_selectedLanguage ?? 'en-') // 初期フィルターまたは選択された言語でフィルター
+          ).toList();
+        });
+      } catch (e) {
+        print('Error parsing voices: $e');
       }
     }
   }
+
+
 
   Future<void> _initializePlayer() async {
     await _player.openPlayer();
@@ -271,6 +270,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   _selectedLanguage = newValue;
                   flutterTts.setLanguage(newValue!);
+
+                  _loadVoices(); // 選択された言語に基づいて音声リストを更新
                 });
               },
             ),
@@ -285,12 +286,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 }).toList(),
                 onChanged: (Map<String, dynamic>? newValue) {
-                  setState(() {
-                    _selectedVoice = newValue;
-                    flutterTts.setVoice(newValue!);
-                  });
+                  if (newValue != null) {
+                    Map<String, String> voiceMap = newValue.map((key, value) => MapEntry(key, value.toString()));
+                    setState(() {
+                      _selectedVoice = newValue;
+                      flutterTts.setVoice(voiceMap); // Ensure the map is converted to <String, String>
+
+                    });
+                  }
                 },
               ),
+
             Slider(
               min: 0.1,
               max: 1.0,

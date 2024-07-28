@@ -83,10 +83,16 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadVoices() async {
     var voices = await flutterTts.getVoices;
     if (voices != null) {
+      List<Map<String, dynamic>> formattedVoices = [];
+      for (var voice in voices) {
+        // 各要素をMap<String, dynamic>としてキャスト
+        formattedVoices.add(Map<String, dynamic>.from(voice as Map));
+      }
+
       setState(() {
-        // ここで適切にキャストまたはデータ変換を行います。
-        _voices = List<Map<String, dynamic>>.from(voices);
+        _voices = formattedVoices;
       });
+
       // Log voices to the console
       print("Available Voices:");
       for (var voice in _voices) {

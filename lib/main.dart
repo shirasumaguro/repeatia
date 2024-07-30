@@ -1,4 +1,4 @@
-// main.dart
+// main.dart repeatia
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_sound/flutter_sound.dart';

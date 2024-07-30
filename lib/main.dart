@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _speed = 0.5; // デフォルトのスピード
 
   final TextEditingController textController = TextEditingController(text: 'he ate an octopus but the octopus is too big to swallow.');
-  final TextEditingController localeController = TextEditingController(text: 'en-US');
+
   static const platform = MethodChannel('com.shirasumaguro.onirepe/beep');
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
@@ -66,8 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _checkPermissions();
   }
 
-
-
   Future<void> _loadLanguages() async {
     var languages = await flutterTts.getLanguages;
     if (languages != null) {
@@ -88,17 +86,31 @@ class _MyHomePageState extends State<MyHomePage> {
         }).toList();
 
         setState(() {
-          _voices = formattedVoices.where(
-                  (voice) => voice['locale'].startsWith(_selectedLanguage ?? 'en-') // 初期フィルターまたは選択された言語でフィルター
-          ).toList();
+          _voices = formattedVoices
+              .where((voice) => voice['locale'].startsWith(_selectedLanguage ?? 'en-') // 初期フィルターまたは選択された言語でフィルター
+                  )
+              .toList();
         });
+
+        // ログに音声の詳細を出力
+        print("Available Voices:");
+        for (var voice in formattedVoices) {
+          print("Voice Name: ${voice['name']}, Locale: ${voice['locale']}");
+          if (voice.containsKey('quality')) {
+            print("  Quality: ${voice['quality']}");
+          }
+          if (voice.containsKey('gender')) {
+            print("  Gender: ${voice['gender']}");
+          }
+          if (voice.containsKey('identifier')) {
+            print("  Identifier: ${voice['identifier']}");
+          }
+        }
       } catch (e) {
         print('Error parsing voices: $e');
       }
     }
   }
-
-
 
   Future<void> _initializePlayer() async {
     await _player.openPlayer();
@@ -194,11 +206,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _speakAndRecord() async {
     String text = textController.text;
-    String locale = localeController.text;
+    String? locale = _selectedLanguage;
 
-    if (locale.isNotEmpty) {
-      await flutterTts.setLanguage(locale);
-    }
+    //if (locale!.isNotEmpty) {
+//      await flutterTts.setLanguage(locale);
+//    }
 
     logger.logWithTimestamp("AAA _speakAndRecord 1");
     await platform.invokeMethod('playBeepok');
@@ -237,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     textController.dispose();
-    localeController.dispose();
+
     _recorder.closeRecorder();
     _player.closePlayer();
     _recorderSubscription?.cancel();
@@ -267,12 +279,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                setState(() {
-                  _selectedLanguage = newValue;
-                  flutterTts.setLanguage(newValue!);
+                if (newValue != null) {
+                  setState(() {
+                    _selectedLanguage = newValue;
+                    flutterTts.setLanguage(newValue);
+                  });
 
-                  _loadVoices(); // 選択された言語に基づいて音声リストを更新
-                });
+                  // 言語が変更された時に適切な音声リストを再ロード
+                  _loadVoices().then((_) {
+                    setState(() {
+                      var newVoice = _voices.firstWhere(
+                        (voice) => voice['locale'].startsWith(newValue),
+                        orElse: () => <String, dynamic>{}, // 空の Map<String, dynamic> を返す
+                      );
+                      _selectedVoice = newVoice.isNotEmpty ? newVoice : null; // 空でない場合のみ設定
+                    });
+                  });
+                }
               },
             ),
             if (_voices.isNotEmpty)
@@ -287,16 +310,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 }).toList(),
                 onChanged: (Map<String, dynamic>? newValue) {
                   if (newValue != null) {
-                    Map<String, String> voiceMap = newValue.map((key, value) => MapEntry(key, value.toString()));
                     setState(() {
-                      _selectedVoice = newValue;
-                      flutterTts.setVoice(voiceMap); // Ensure the map is converted to <String, String>
-
+                      // リスト内のオブジェクトとの一致を保証するために、_selectedVoiceを直接設定します。
+                      _selectedVoice = _voices.firstWhere((voice) => voice == newValue, orElse: () => _voices.first);
+                    });
+                    Map<String, String> voiceMap = newValue.map(
+                      (key, value) => MapEntry(key, value.toString()),
+                    );
+                    flutterTts.setVoice(voiceMap).then((_) {
+                      print("Voice set successfully");
+                    }).catchError((error) {
+                      print("Error setting voice: $error");
                     });
                   }
                 },
               ),
-
             Slider(
               min: 0.1,
               max: 1.0,
@@ -327,12 +355,6 @@ class _MyHomePageState extends State<MyHomePage> {
               controller: textController,
               decoration: InputDecoration(
                 labelText: 'Enter text',
-              ),
-            ),
-            TextField(
-              controller: localeController,
-              decoration: InputDecoration(
-                labelText: 'Enter locale code (e.g., en-US)',
               ),
             ),
             SizedBox(height: 20),

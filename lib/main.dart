@@ -141,11 +141,16 @@ class _MyHomePageState extends State<MyHomePage> {
     Directory appDirectory = await getApplicationDocumentsDirectory();
     filePath = '${appDirectory.path}/${DateTime.now().millisecondsSinceEpoch}.aac';
     logger.logWithTimestamp("AAA    _startRecording 2 filePath $filePath");
+
+    // 権限が付与されているかを再確認
+    print("Microphone permission status before starting recorder: ${await Permission.microphone.status}");
+
     if (await Permission.microphone.isGranted) {
       _recordingCompleter = Completer<void>();
       await _recorder.startRecorder(toFile: filePath, codec: Codec.aacADTS);
 
       _recorderSubscription = _recorder.onProgress!.listen((e) {
+        logger.logWithTimestamp("AAA    _startRecording e: $e");
         logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration");
         if (e != null && e.decibels != null && e.decibels! < 22) {
           silenceDuration = e.duration.inMilliseconds - lasttimeduration;

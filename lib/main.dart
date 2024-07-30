@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Text to Speech and Audio Recorder',
+      title: 'Repeatia',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController textController = TextEditingController(text: 'I told my wife she should embrace her mistakes. She gave me a hug.');
 
-  static const platform = MethodChannel('com.shirasumaguro.onirepe/beep');
+  static const platform = MethodChannel('com.shirasumaguro.repeatia/beep');
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
   bool isRecording = false;
@@ -267,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Text to Speech and Audio Recorder'),
+        title: Text('Repeatia'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

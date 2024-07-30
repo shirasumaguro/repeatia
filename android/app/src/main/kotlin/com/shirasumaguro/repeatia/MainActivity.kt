@@ -1,4 +1,4 @@
-package com.shirasumaguro.onirepe
+package com.shirasumaguro.repeatia
 
 import android.os.Bundle
 import android.content.Context
@@ -14,7 +14,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.shirasumaguro.onirepe/beep"
+    private val CHANNEL = "com.shirasumaguro.repeatia/beep"
     private val TAG = "MainActivity"
     // private var editText: EditText? = null
 

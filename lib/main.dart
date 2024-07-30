@@ -119,17 +119,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _checkPermissions() async {
     PermissionStatus microphoneStatus = await Permission.microphone.request();
     PermissionStatus storageStatus = await Permission.storage.request();
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.microphone,
-      Permission.storage,
-    ].request();
 
-    bool allGranted = statuses.values.every((status) => status.isGranted);
-
-    if (allGranted) {
+    if (microphoneStatus.isGranted && storageStatus.isGranted) {
       print("All permissions granted");
     } else {
-      print("Permissions not granted: $statuses");
+      print("Permissions not granted");
     }
   }
 

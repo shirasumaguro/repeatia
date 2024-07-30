@@ -124,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("All permissions granted");
     } else {
       print("Permissions not granted $microphoneStatus $storageStatus");
+      openAppSettings(); // ユーザーにアプリの設定を開かせて手動で権限を付与させる
     }
   }
 

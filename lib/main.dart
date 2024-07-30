@@ -214,6 +214,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     logger.logWithTimestamp("AAA _speakAndRecord 1");
     await platform.invokeMethod('playBeepok');
+    await flutterTts.setVolume(0.001);
+    await flutterTts.speak("a");
+    await flutterTts.awaitSpeakCompletion(true); // 発声完了を待つ
+    await flutterTts.setVolume(1.0);
     await flutterTts.speak(text);
     await flutterTts.awaitSpeakCompletion(true);
     logger.logWithTimestamp("AAA _speakAndRecord 2");

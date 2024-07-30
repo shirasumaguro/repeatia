@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _pitch = 0.5; // デフォルトのピッチ
   double _speed = 0.5; // デフォルトのスピード
 
-  final TextEditingController textController = TextEditingController(text: 'he ate an octopus but the octopus is too big to swallow.');
+  final TextEditingController textController = TextEditingController(text: 'I told my wife she should embrace her mistakes. She gave me a hug.');
 
   static const platform = MethodChannel('com.shirasumaguro.onirepe/beep');
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();

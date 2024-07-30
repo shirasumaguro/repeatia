@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (microphoneStatus.isGranted && storageStatus.isGranted) {
       print("All permissions granted");
     } else {
-      print("Permissions not granted");
+      print("Permissions not granted $microphoneStatus $storageStatus");
     }
   }
 

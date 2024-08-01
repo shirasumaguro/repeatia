@@ -183,6 +183,17 @@ class _MyHomePageState extends State<MyHomePage> {
       isRecording = false;
     });
     _recordingCompleter?.complete();
+
+    if (filePath != null) {
+      final file = File(filePath!);
+      if (await file.exists()) {
+        print('Recording saved at $filePath');
+        print('File size: ${await file.length()} bytes');
+        //widget.onStop(filePath!);
+      } else {
+        print('Recording file does not exist at $filePath');
+      }
+    }
   }
 
   Future<void> _playRecording() async {

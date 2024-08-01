@@ -33,6 +33,10 @@ dependencies:
   flutter_tts: ^3.3.3
   flutter_sound: ^9.2.12
   path_provider: ^2.0.11
+  record:
+  audioplayers:
+  logger:
+  audio_session:
   permission_handler: ^10.0.0
 
 

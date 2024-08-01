@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_tts: ^3.3.3
-  flutter_sound: ^9.2.12
+  flutter_sound: ^9.9.0
   path_provider: ^2.0.11
   record:
   audioplayers:

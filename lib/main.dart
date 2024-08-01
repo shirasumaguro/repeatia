@@ -1,4 +1,3 @@
-// main.dart repeatia
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -12,6 +11,72 @@ import 'dart:async';
 
 void main() {
   runApp(MyApp());
+}
+
+class TtsService {
+  final FlutterTts flutterTts = FlutterTts();
+  bool _isSpeaking = false;
+
+  TtsService() {
+    // イベントリスナーの設定
+    flutterTts.setStartHandler(() {
+      _isSpeaking = true;
+      print("TTS started");
+    });
+
+    flutterTts.setCompletionHandler(() {
+      _isSpeaking = false;
+      print("TTS completed");
+    });
+
+    flutterTts.setErrorHandler((msg) {
+      _isSpeaking = false;
+      print("TTS error: $msg");
+    });
+  }
+
+  Future<void> speak(String text) async {
+    await flutterTts.speak(text);
+    await _waitForCompletion();
+  }
+
+  Future<void> setVolume(double volume) async {
+    await flutterTts.setVolume(volume);
+  }
+
+  Future<void> setPitch(double pitch) async {
+    await flutterTts.setPitch(pitch);
+  }
+
+  Future<void> setSpeechRate(double rate) async {
+    await flutterTts.setSpeechRate(rate);
+  }
+
+  Future<void> setLanguage(String language) async {
+    await flutterTts.setLanguage(language);
+  }
+
+  Future<void> setVoice(Map<String, String> voice) async {
+    await flutterTts.setVoice(voice);
+  }
+
+  Future<List<dynamic>> getLanguages() async {
+    return await flutterTts.getLanguages;
+  }
+
+  Future<List<dynamic>> getVoices() async {
+    return await flutterTts.getVoices;
+  }
+
+  Future<void> awaitSpeakCompletion(bool awaitCompletion) async {
+    await flutterTts.awaitSpeakCompletion(awaitCompletion);
+  }
+
+  Future<void> _waitForCompletion() async {
+    while (_isSpeaking) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -33,7 +98,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final FlutterTts flutterTts = FlutterTts();
+  final TtsService ttsService = TtsService();
 
   double _pitch = 0.5; // デフォルトのピッチ
   double _speed = 0.5; // デフォルトのスピード
@@ -68,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _loadLanguages() async {
-    var languages = await flutterTts.getLanguages;
+    var languages = await ttsService.getLanguages();
     if (languages != null) {
       setState(() {
         _languages = List<String>.from(languages)
@@ -79,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _loadVoices() async {
-    var voices = await flutterTts.getVoices;
+    var voices = await ttsService.getVoices();
     if (voices != null) {
       try {
         List<Map<String, dynamic>> formattedVoices = voices.map<Map<String, dynamic>>((voice) {
@@ -250,21 +315,14 @@ class _MyHomePageState extends State<MyHomePage> {
     String text = textController.text;
     String? locale = _selectedLanguage;
 
-    //if (locale!.isNotEmpty) {
-//      await flutterTts.setLanguage(locale);
-//    }
-
     logger.logWithTimestamp("AAA _speakAndRecord 1");
     await platform.invokeMethod('playBeepok');
-    await flutterTts.setVolume(0.001);
-    await flutterTts.speak("a");
+    await ttsService.setVolume(0.001);
+    await ttsService.speak("a");
     logger.logWithTimestamp("AAA _speakAndRecord 1.1");
-    await flutterTts.awaitSpeakCompletion(true); // 発声完了を待つ
+    await ttsService.setVolume(1.0);
+    await ttsService.speak(text);
     logger.logWithTimestamp("AAA _speakAndRecord 1.2");
-    await flutterTts.setVolume(1.0);
-    await flutterTts.speak(text);
-    logger.logWithTimestamp("AAA _speakAndRecord 1.3");
-    await flutterTts.awaitSpeakCompletion(true);
     logger.logWithTimestamp("AAA _speakAndRecord 2");
     await platform.invokeMethod('playBeepok');
     await _startRecording();
@@ -283,7 +341,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _startLoop() async {
     isStopped = false;
     while (!isStopped) {
-      //isStopped = true;
       await _speakAndRecord();
       await Future.delayed(Duration(seconds: 1)); // Optional delay between loops
     }
@@ -331,7 +388,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 if (newValue != null) {
                   setState(() {
                     _selectedLanguage = newValue;
-                    flutterTts.setLanguage(newValue);
+                    ttsService.setLanguage(newValue);
                   });
 
                   // 言語が変更された時に適切な音声リストを再ロード
@@ -366,7 +423,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Map<String, String> voiceMap = newValue.map(
                       (key, value) => MapEntry(key, value.toString()),
                     );
-                    flutterTts.setVoice(voiceMap).then((_) {
+                    ttsService.setVoice(voiceMap).then((_) {
                       print("Voice set successfully");
                     }).catchError((error) {
                       print("Error setting voice: $error");
@@ -383,7 +440,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onChanged: (double value) {
                 setState(() {
                   _pitch = value;
-                  flutterTts.setPitch(_pitch);
+                  ttsService.setPitch(_pitch);
                 });
               },
             ),
@@ -396,7 +453,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onChanged: (double value) {
                 setState(() {
                   _speed = value;
-                  flutterTts.setSpeechRate(_speed);
+                  ttsService.setSpeechRate(_speed);
                 });
               },
             ),

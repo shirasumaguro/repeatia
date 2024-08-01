@@ -152,6 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _startRecording() async {
     int silenceDuration = 0;
     int lasttimeduration = 0;
+    bool waitspeak = true;
 
     logger.logWithTimestamp("AAA    _startRecording 1");
     Directory appDirectory = await getApplicationDocumentsDirectory();
@@ -168,13 +169,21 @@ class _MyHomePageState extends State<MyHomePage> {
       _recorderSubscription = _recorder.onProgress!.listen((e) {
         logger.logWithTimestamp("AAA    _startRecording e: $e");
         logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration");
-        if (e != null && e.decibels != null && e.decibels! < 22) {
-          silenceDuration = e.duration.inMilliseconds - lasttimeduration;
-          if (silenceDuration >= silenceThreshold) {
-            _stopRecording();
-          }
-        } else {
+        if (e != null && e.decibels != null && e.decibels! > 22) {
+          waitspeak = false;
           lasttimeduration = e.duration.inMilliseconds;
+        } else {
+          if (!waitspeak) {
+            silenceDuration = e.duration.inMilliseconds - lasttimeduration;
+            if (silenceDuration >= silenceThreshold) {
+              _stopRecording();
+            }
+          }
+        }
+
+        if (!waitspeak && (e != null && e.decibels != null && e.decibels! < 22)) {
+        } else {
+          waitspeak = false;
         }
       });
       logger.logWithTimestamp("AAA    _startRecording 3");

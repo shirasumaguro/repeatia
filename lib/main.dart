@@ -77,7 +77,8 @@ class TtsService {
 
   Future<void> _waitForCompletion() async {
     while (_isSpeaking) {
-      await Future.delayed(Duration(milliseconds: 100));
+      logger.logWithTimestamp("AAA TTS _waitForCompletion:  _isSpeaking $_isSpeaking");
+      await Future.delayed(Duration(milliseconds: 500));
     }
   }
 }

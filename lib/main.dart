@@ -144,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    print("AAA original in initstate.");
     _initializeRecorder();
     logger.initializeLogFilePath();
     _initializePlayer();

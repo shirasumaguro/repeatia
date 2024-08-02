@@ -78,10 +78,15 @@ class TtsService {
 
   Future<void> _waitForCompletion() async {
     logger.logWithTimestamp("AAA TTS _waitForCompletion:  _isSpeaking $_isSpeaking");
-    while (_isSpeaking) {
-      logger.logWithTimestamp("AAA TTS _waitForCompletion:  in while loop _isSpeaking $_isSpeaking");
-      await Future.delayed(Duration(milliseconds: 500));
+
+    try {
+      while (_isSpeaking) {
+        throw Exception('Stack trace test');
+      }
+    } catch (e, stackTrace) {
+      logger.logWithTimestamp("AAA TTS _waitForCompletion stack trace: $stackTrace");
     }
+    await Future.delayed(Duration(milliseconds: 500));
   }
 }
 

@@ -18,6 +18,11 @@ class TtsService {
   bool _isSpeaking = false;
   Logger logger = Logger();
 
+  @override
+  void initState() {
+    logger.initializeLogFilePath();
+  }
+
   TtsService() {
     // イベントリスナーの設定
     flutterTts.setStartHandler(() {

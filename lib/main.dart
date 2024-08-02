@@ -21,19 +21,19 @@ class TtsService {
   TtsService() {
     // イベントリスナーの設定
     flutterTts.setStartHandler(() {
-      _isSpeaking = true;
       logger.logWithTimestamp("AAA TTS started _isSpeaking $_isSpeaking");
+      _isSpeaking = true;
     });
 
     flutterTts.setCompletionHandler(() {
-      _isSpeaking = false;
       logger.logWithTimestamp("AAA TTS complete _isSpeaking $_isSpeaking");
+      _isSpeaking = false;
     });
 
     flutterTts.setErrorHandler((msg) {
+      logger.logWithTimestamp("AAA TTS error: $msg _isSpeaking $_isSpeaking");
       _isSpeaking = false;
       print("TTS error: $msg");
-      logger.logWithTimestamp("AAA TTS error: $msg _isSpeaking $_isSpeaking");
     });
   }
 
@@ -321,9 +321,11 @@ class _MyHomePageState extends State<MyHomePage> {
     await platform.invokeMethod('playBeepok');
     await ttsService.setVolume(0.001);
     await ttsService.speak("a");
+    ttsService._waitForCompletion();
     logger.logWithTimestamp("AAA _speakAndRecord 1.1");
     await ttsService.setVolume(1.0);
     await ttsService.speak(text);
+    ttsService._waitForCompletion();
     logger.logWithTimestamp("AAA _speakAndRecord 1.2");
     logger.logWithTimestamp("AAA _speakAndRecord 2");
     await platform.invokeMethod('playBeepok');

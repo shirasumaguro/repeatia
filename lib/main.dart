@@ -38,6 +38,7 @@ class TtsService {
   }
 
   Future<void> speak(String text) async {
+    _isSpeaking = true;
     await flutterTts.speak(text);
     await _waitForCompletion();
   }
@@ -319,11 +320,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     logger.logWithTimestamp("AAA _speakAndRecord 1");
     await platform.invokeMethod('playBeepok');
+    ttsService._isSpeaking = true;
     await ttsService.setVolume(0.001);
     await ttsService.speak("a");
     ttsService._waitForCompletion();
     logger.logWithTimestamp("AAA _speakAndRecord 1.1");
     await ttsService.setVolume(1.0);
+    ttsService._isSpeaking = true;
     await ttsService.speak(text);
     ttsService._waitForCompletion();
     logger.logWithTimestamp("AAA _speakAndRecord 1.2");

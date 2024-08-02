@@ -255,8 +255,8 @@ class _MyHomePageState extends State<MyHomePage> {
       await _recorder.startRecorder(toFile: filePath, codec: Codec.aacADTS);
 
       _recorderSubscription = _recorder.onProgress!.listen((e) {
-        logger.logWithTimestamp("AAA    _startRecording e: $e");
-        logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration");
+        //logger.logWithTimestamp("AAA    _startRecording e: $e");
+        logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration waitspeak $waitspeak");
         if (e != null && e.decibels != null && e.decibels! > 22) {
           waitspeak = false;
           lasttimeduration = e.duration.inMilliseconds;
@@ -267,11 +267,6 @@ class _MyHomePageState extends State<MyHomePage> {
               _stopRecording();
             }
           }
-        }
-
-        if (!waitspeak && (e != null && e.decibels != null && e.decibels! < 22)) {
-        } else {
-          waitspeak = false;
         }
       });
       logger.logWithTimestamp("AAA    _startRecording 3");

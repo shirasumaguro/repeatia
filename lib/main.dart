@@ -16,22 +16,24 @@ void main() {
 class TtsService {
   final FlutterTts flutterTts = FlutterTts();
   bool _isSpeaking = false;
+  Logger logger = Logger();
 
   TtsService() {
     // イベントリスナーの設定
     flutterTts.setStartHandler(() {
       _isSpeaking = true;
-      print("TTS started");
+      logger.logWithTimestamp("AAA TTS started _isSpeaking $_isSpeaking");
     });
 
     flutterTts.setCompletionHandler(() {
       _isSpeaking = false;
-      print("TTS completed");
+      logger.logWithTimestamp("AAA TTS complete _isSpeaking $_isSpeaking");
     });
 
     flutterTts.setErrorHandler((msg) {
       _isSpeaking = false;
       print("TTS error: $msg");
+      logger.logWithTimestamp("AAA TTS error: $msg _isSpeaking $_isSpeaking");
     });
   }
 

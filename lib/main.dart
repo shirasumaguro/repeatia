@@ -109,6 +109,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+
+      debugShowCheckedModeBanner: false, // ここを追加してバッジを非表示にする
       home: MyHomePage(),
     );
   }
@@ -400,6 +402,7 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            Image.asset('assets/repeatiaicon.webp'), // アイコンを表示
             DropdownButton<String>(
               value: _selectedLanguage,
               hint: Text("Select Language"),

@@ -84,8 +84,9 @@ class TtsService {
     } catch (e, stackTrace) {
       logger.logWithTimestamp("AAA TTS _waitForCompletion stack trace: $stackTrace");
     }
-      while (_isSpeaking) {
+    while (_isSpeaking) {
       await Future.delayed(Duration(milliseconds: 500));
+    }
   }
 }
 

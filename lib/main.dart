@@ -257,7 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _recorderSubscription = _recorder.onProgress!.listen((e) {
         //logger.logWithTimestamp("AAA    _startRecording e: $e");
         logger.logWithTimestamp("AAA    _startRecording e.decibels ${e.decibels} e.duration.inMilliseconds ${e.duration.inMilliseconds} lasttimeduration $lasttimeduration waitspeak $waitspeak");
-        if (e != null && e.decibels != null && e.decibels! > 22) {
+        if (e != null && e.decibels != null && e.decibels! > 17) {
           waitspeak = false;
           lasttimeduration = e.duration.inMilliseconds;
         } else {

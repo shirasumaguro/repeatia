@@ -38,6 +38,7 @@ class TtsService {
   }
 
   Future<void> speak(String text) async {
+    logger.logWithTimestamp("AAA TTS speak _isSpeaking $_isSpeaking");
     _isSpeaking = true;
     await flutterTts.speak(text);
     await _waitForCompletion();
@@ -76,8 +77,9 @@ class TtsService {
   }
 
   Future<void> _waitForCompletion() async {
+    logger.logWithTimestamp("AAA TTS _waitForCompletion:  _isSpeaking $_isSpeaking");
     while (_isSpeaking) {
-      logger.logWithTimestamp("AAA TTS _waitForCompletion:  _isSpeaking $_isSpeaking");
+      logger.logWithTimestamp("AAA TTS _waitForCompletion:  in while loop _isSpeaking $_isSpeaking");
       await Future.delayed(Duration(milliseconds: 500));
     }
   }

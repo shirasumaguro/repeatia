@@ -25,6 +25,8 @@ class TtsService {
   }
 
   TtsService() {
+    print("AAA TtsService constructor");
+    logger.initializeLogFilePath();
     // イベントリスナーの設定
     flutterTts.setStartHandler(() {
       logger.logWithTimestamp("AAA TTS started _isSpeaking $_isSpeaking");

@@ -40,8 +40,11 @@ class TtsService {
   Future<void> speak(String text) async {
     logger.logWithTimestamp("AAA TTS speak _isSpeaking $_isSpeaking");
     _isSpeaking = true;
+    logger.logWithTimestamp("AAA TTS speak _isSpeaking 2 $_isSpeaking");
     await flutterTts.speak(text);
+    logger.logWithTimestamp("AAA TTS speak _isSpeaking 3 $_isSpeaking");
     await _waitForCompletion();
+    logger.logWithTimestamp("AAA TTS speak _isSpeaking 4 $_isSpeaking");
   }
 
   Future<void> setVolume(double volume) async {

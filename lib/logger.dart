@@ -8,7 +8,7 @@ class Logger {
   Future<void> initializeLogFilePath() async {
     final directory = await getApplicationDocumentsDirectory();
     _logFilePath = '${directory.path}/logfile.txt'; // ドキュメントディレクトリにファイルを作成
-    print("AAA _logFilePath $_logFilePath");
+    print("AAA initializeLogFilePath _logFilePath $_logFilePath");
   }
 
   void logWithTimestamp(String message) {

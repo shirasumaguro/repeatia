@@ -20,6 +20,7 @@ class TtsService {
 
   @override
   void initState() {
+    print("AAA TtsService in initstate.");
     logger.initializeLogFilePath();
   }
 

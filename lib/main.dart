@@ -150,7 +150,11 @@ class _MyHomePageState extends State<MyHomePage> {
     _initializeRecorder();
     logger.initializeLogFilePath();
     _initializePlayer();
-    _loadLanguages();
+    _loadLanguages().then((_) {
+      setState(() {
+        _selectedLanguage = 'en-US'; // デフォルト言語を 'en-US' に設定
+      });
+    });
     _loadVoices();
     _checkPermissions();
   }
@@ -357,7 +361,6 @@ class _MyHomePageState extends State<MyHomePage> {
     await platform.invokeMethod('playBeepok');
     await _playRecording();
     logger.logWithTimestamp("AAA _speakAndRecord 6");
-    await platform.invokeMethod('playBeepok');
   }
 
   Future<void> _startLoop() async {
@@ -384,7 +387,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  String? _selectedLanguage;
+  String? _selectedLanguage = 'en=US';
   Map<String, dynamic>? _selectedVoice;
 
   @override
@@ -486,6 +489,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             SizedBox(height: 20),
+            /*
             ElevatedButton(
               onPressed: isRecording ? _stopRecording : _startRecording,
               child: Text(isRecording ? 'Stop Recording' : 'Start Recording'),
@@ -495,7 +499,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _playRecording,
               child: Text('Play Recording'),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20),*/
             ElevatedButton(
               onPressed: _startLoop,
               child: Text('Speak, Record and Play'),

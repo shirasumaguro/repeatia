@@ -402,7 +402,12 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            Image.asset('assets/repeatiaicon.webp'), // アイコンを表示
+            SizedBox(
+              width: 3 * MediaQuery.of(context).devicePixelRatio * 62.54, // 幅を3センチメートルに設定
+              height: 3 * MediaQuery.of(context).devicePixelRatio * 62.54, // 高さも同様に設定
+              child: Image.asset('assets/repeatiaicon.webp'), // アイコンを表示
+            ),
+            //Image.asset('assets/repeatiaicon.webp'), // アイコンを表示
             DropdownButton<String>(
               value: _selectedLanguage,
               hint: Text("Select Language"),

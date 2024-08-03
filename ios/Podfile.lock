@@ -1,9 +1,13 @@
 PODS:
-  - Flutter (1.0.0)
-  - flutter_sound (9.8.1):
+  - audio_session (0.0.1):
     - Flutter
-    - flutter_sound_core (= 9.8.1)
-  - flutter_sound_core (9.8.1)
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_sound (9.9.5):
+    - Flutter
+    - flutter_sound_core (= 9.9.5)
+  - flutter_sound_core (9.9.5)
   - flutter_tts (0.0.1):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -11,19 +15,29 @@ PODS:
     - FlutterMacOS
   - permission_handler_apple (9.1.1):
     - Flutter
+  - record_darwin (1.0.0):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
+  - audio_session (from `.symlinks/plugins/audio_session/ios`)
+  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
   - Flutter (from `Flutter`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - record_darwin (from `.symlinks/plugins/record_darwin/ios`)
 
 SPEC REPOS:
   trunk:
     - flutter_sound_core
 
 EXTERNAL SOURCES:
+  audio_session:
+    :path: ".symlinks/plugins/audio_session/ios"
+  audioplayers_darwin:
+    :path: ".symlinks/plugins/audioplayers_darwin/ios"
   Flutter:
     :path: Flutter
   flutter_sound:
@@ -34,15 +48,20 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  record_darwin:
+    :path: ".symlinks/plugins/record_darwin/ios"
 
 SPEC CHECKSUMS:
+  audio_session: 088d2483ebd1dc43f51d253d4a1c517d9a2e7207
+  audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_sound: 50f27298c6997541da1afbd4ff368a3aee60451d
-  flutter_sound_core: e7ccc8b10ecfd22894fd0507c5e79a6ae6fafeb8
+  flutter_sound: 2bbfd392d7a1f5481b38b35bc5a1748a577a5fd4
+  flutter_sound_core: 64268d83e2ff12fb500d574e078b98dd00428ed9
   flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  record_darwin: df0a677188e5fed18472550298e675f19ddaffbe
 
-PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+PODFILE CHECKSUM: 9dcfd6ab17266190b30c1ee20abd8c736a4dae80
 
 COCOAPODS: 1.15.2

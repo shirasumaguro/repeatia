@@ -3,11 +3,9 @@
 <plist version="1.0">
 <dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>We need access to the microphone to record audio.</string>
+    <string>音声の録音のためにはマイクへのアクセスが必要です。</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need access to the photo library to save recordings.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>We need access to the camera for recording videos.</string>
+    <string>音声の保存のためにはフォトライブラリへのアクセスが必要です。</string>
     <key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

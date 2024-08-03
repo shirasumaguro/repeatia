@@ -219,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("All permissions granted");
     } else {
       print("Permissions not granted $microphoneStatus $storageStatus");
-      openAppSettings(); // ユーザーにアプリの設定を開かせて手動で権限を付与させる
+      //openAppSettings(); // ユーザーにアプリの設定を開かせて手動で権限を付与させる
     }
   }
 
@@ -403,8 +403,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: <Widget>[
             SizedBox(
-              width: 3 * MediaQuery.of(context).devicePixelRatio * 62.54, // 幅を3センチメートルに設定
-              height: 3 * MediaQuery.of(context).devicePixelRatio * 62.54, // 高さも同様に設定
+              width: 3 * MediaQuery.of(context).devicePixelRatio * 22.54, // 幅を3センチメートルに設定
+              height: 3 * MediaQuery.of(context).devicePixelRatio * 22.54, // 高さも同様に設定
               child: Image.asset('assets/repeatiaicon.webp'), // アイコンを表示
             ),
             //Image.asset('assets/repeatiaicon.webp'), // アイコンを表示

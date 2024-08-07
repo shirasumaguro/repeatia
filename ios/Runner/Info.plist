@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>音声の録音のためにはマイクへのアクセスが必要です。</string>
+    <string>音声の録音のためにマイクへのアクセスが必要となります。</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>音声の保存のためにはフォトライブラリへのアクセスが必要です。</string>
     <key>CFBundleDevelopmentRegion</key>

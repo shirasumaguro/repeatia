@@ -134,6 +134,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
   bool isRecording = false;
   bool isPlaying = false;
+  bool isSpeaking = false;
+
   Logger logger = Logger();
   String? filePath;
   List<String> _languages = [];
@@ -339,6 +341,11 @@ class _MyHomePageState extends State<MyHomePage> {
     String text = textController.text;
     String? locale = _selectedLanguage;
 
+    setState(() {
+      isSpeaking = true;
+      isRecording = false;
+      isPlaying = false;
+    });
     logger.logWithTimestamp("AAA _speakAndRecord 1");
     await platform.invokeMethod('playBeepok');
     ttsService._isSpeaking = true;
@@ -350,10 +357,20 @@ class _MyHomePageState extends State<MyHomePage> {
     ttsService._isSpeaking = true;
     await ttsService.speak(text);
     ttsService._waitForCompletion();
+    setState(() {
+      isSpeaking = false;
+      isRecording = true;
+      isPlaying = false;
+    });
     logger.logWithTimestamp("AAA _speakAndRecord 1.2");
     logger.logWithTimestamp("AAA _speakAndRecord 2");
     await platform.invokeMethod('playBeepok');
     await _startRecording();
+    setState(() {
+      isSpeaking = false;
+      isRecording = false;
+      isPlaying = true;
+    });
     logger.logWithTimestamp("AAA _speakAndRecord 3");
     await Future.delayed(Duration(seconds: 1));
     logger.logWithTimestamp("AAA _speakAndRecord 4");
@@ -362,6 +379,11 @@ class _MyHomePageState extends State<MyHomePage> {
     logger.logWithTimestamp("AAA _speakAndRecord 5");
     await platform.invokeMethod('playBeepok');
     await _playRecording();
+    setState(() {
+      isSpeaking = false;
+      isRecording = false;
+      isPlaying = false;
+    });
     logger.logWithTimestamp("AAA _speakAndRecord 6");
   }
 
@@ -512,6 +534,15 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _startLoop,
               child: Text('Speak, Record and Play'),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.volume_up, color: isSpeaking ? Colors.blue : Colors.grey),
+                Icon(Icons.mic, color: isRecording ? Colors.red : Colors.grey),
+                Icon(Icons.play_arrow, color: isPlaying ? Colors.green : Colors.grey),
+              ],
+            ),
+
             Spacer(),
             ElevatedButton(
               onPressed: _stopLoop,

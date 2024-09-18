@@ -276,9 +276,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (microphoneStatus.isGranted && storageStatus.isGranted) {
       print("All permissions granted");
+    } else if (microphoneStatus.isPermanentlyDenied) {
+      print("Microphone permission is permanently denied.");
+      // 設定画面にユーザーを誘導
+      _showSettingsDialog();
     } else {
       print("Permissions not granted $microphoneStatus $storageStatus");
     }
+  }
+
+// 設定画面に誘導するダイアログ
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text("マイクのアクセスが拒否されています"),
+        content: Text("アプリが正しく動作するためには、マイクのアクセス許可が必要です。設定画面で許可を与えてください。"),
+        actions: <Widget>[
+          TextButton(
+            child: Text("キャンセル"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: Text("設定に移動"),
+            onPressed: () {
+              openAppSettings(); // 設定画面を開く
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _initializeRecorder() async {

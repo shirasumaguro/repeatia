@@ -19,14 +19,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.dumpErrorToConsole(details);
-    if (kReleaseMode) {
-      // リリースモードの場合、例外をthrowして`logcat`に送信
-      Zone.current.handleUncaughtError(details.exception, details.stack!);
-    }
-  };
-
   runApp(MyApp());
 }
 

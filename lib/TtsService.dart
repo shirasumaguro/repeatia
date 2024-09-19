@@ -138,7 +138,7 @@ class TtsService {
   }
 
   // テキストを分割してリストに保存するメソッド
-  void setText(String text) {
+  void saveText(String text) {
     // テキストを保存
     saveTextToFile(text);
 
@@ -148,7 +148,10 @@ class TtsService {
     } else {
       logger.logWithTimestamp("Sentence already exists in the list.");
     }
+  }
 
+  // テキストを分割してリストに保存するメソッド
+  void setText(String text) {
     _textList = text.split('/').map((t) => t.trim()).toList(); // "/"で分割し、トリムしてリストに格納
     _currentIndex = 0; // インデックスをリセット
   }

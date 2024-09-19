@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _speed = 0.5; // デフォルトのスピード
   double _speedvid = 0.5; // デフォルトの動画再生速度
   SharedPreferences? prefs;
-
+  bool textedited = false;
   String? _selectedSentence;
   final TextEditingController textController = TextEditingController(text: 'Sarah Perry was a veterinary nurse who had been working daily / at an old zoo in a deserted district of the territory.');
 
@@ -596,6 +596,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _startLoop() async {
     isStopped = false;
+    if (textedited) {
+      ttsService.saveText(textController.text);
+      textedited = false;
+    }
     ttsService.setText(textController.text);
     if (_selectedLanguage != null && _selectedVoice != null) {
       saveSettings(_selectedLanguage!, _selectedVoice!);
@@ -883,6 +887,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         maxLines: 3, // 3行に固定
                         minLines: 3, // 3行に固定
                         keyboardType: TextInputType.multiline,
+
+                        onChanged: (text) {
+                          setState(() {
+                            textedited = true; // テキストが変更されたらtrueに設定
+                          });
+                        },
                       ),
                     if (_sentences.isNotEmpty)
                       DropdownButton<String>(
@@ -898,6 +908,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           );
                         }).toList(),
                         onChanged: (String? newValue) {
+                          textedited = false;
                           setState(() {
                             _selectedSentence = newValue;
                             textController.text = newValue ?? '';

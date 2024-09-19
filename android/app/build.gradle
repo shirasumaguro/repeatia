@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.repeatia"
+    namespace = "com.shirasumaguro.repeatia"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

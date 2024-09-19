@@ -74,10 +74,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String? _selectedFileName;
   List<Map<String, dynamic>> _voices = [];
 
-  String? _selectedLanguage = 'en-GB';
+  String? _selectedLanguage = 'en-US';
   String? _selectedVoice; // 型を String? に変更
 
-  bool isStopped = false;
+  bool isStopped = true;
 
   static const int silenceThreshold = 1500; // 3秒の無音判定
   StreamSubscription? _recorderSubscription;
@@ -98,6 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _checkPermissions();
 
+    ttsService.onTextChanged = (String newText) {
+      setState(() {
+        ttsService.chosentext = newText;
+      });
+    };
     // TtsService にコールバックを渡す
     ttsService.onSentencesLoaded = (List<String> sentences) {
       setState(() {
@@ -187,6 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     lang.startsWith('zh-') || // 中国語
                     lang.startsWith('es-') || // スペイン語
                     lang.startsWith('de-') || // ドイツ語
+                    lang.startsWith('th-') || // タイ語
+                    lang.startsWith('vi-') || // ベトナム語
                     lang.startsWith('fr-') // フランス語
                 )
             .toList();
@@ -476,6 +483,7 @@ class _MyHomePageState extends State<MyHomePage> {
         isRecording = false;
         isPlaying = false;
       });
+      ttsService.speak2nd = true;
       await speaksum();
     }
     if (isStopped) {
@@ -727,11 +735,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    if (showImage && _selectedFilePath == null)
+                    if (showImage && _selectedFilePath == null && isStopped)
                       SizedBox(
                         width: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         height: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         child: Image.asset('assets/repeatiaicon.webp'),
+                      ),
+                    if (_selectedFilePath == null && !isStopped)
+                      Text(
+                        ttsService.chosentext, // テキストを表示
+                        style: TextStyle(
+                          fontSize: 18.0, // テキストのサイズを調整
+                          color: Colors.black, // 必要に応じて色も変更
+                        ),
                       ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -823,19 +839,20 @@ class _MyHomePageState extends State<MyHomePage> {
                           }
                         },
                       ),
-                    Slider(
-                      min: 0.1,
-                      max: 1.0,
-                      divisions: 10,
-                      label: 'Pitch $_pitch',
-                      value: _pitch,
-                      onChanged: (double value) {
-                        setState(() {
-                          _pitch = value;
-                          ttsService.setPitch(_pitch);
-                        });
-                      },
-                    ),
+                    if (_selectedFilePath == null)
+                      Slider(
+                        min: 0.1,
+                        max: 1.0,
+                        divisions: 10,
+                        label: 'Pitch $_pitch',
+                        value: _pitch,
+                        onChanged: (double value) {
+                          setState(() {
+                            _pitch = value;
+                            ttsService.setPitch(_pitch);
+                          });
+                        },
+                      ),
                     Slider(
                       min: 0.1,
                       max: 1.0,
@@ -855,9 +872,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         decoration: InputDecoration(
                           labelText: 'Enter text or choose from list',
                           border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: () {
+                              // クリアボタンを押したときにテキストをクリア
+                              textController.clear();
+                            },
+                          ),
                         ),
-                        maxLines: null,
-                        minLines: 1,
+                        maxLines: 3, // 3行に固定
+                        minLines: 3, // 3行に固定
                         keyboardType: TextInputType.multiline,
                       ),
                     if (_sentences.isNotEmpty)

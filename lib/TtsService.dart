@@ -22,15 +22,20 @@ import 'package:video_player/video_player.dart'; // 動画プレビューのた�
 class TtsService {
   final FlutterTts flutterTts = FlutterTts();
   bool isSpeaking = false;
+  String currentText = "";
+  String chosentext = "";
   Logger logger = Logger();
   List<String> _sentences = [];
   SharedPreferences? prefs;
+  bool speak2nd = false;
+  String lastText = "";
 
   List<String> _textList = []; // テキストを保持するリスト
   int _currentIndex = 0; // 現在読み上げているテキストのインデックス
 
   // コールバック関数の型を定義
   Function(List<String>)? onSentencesLoaded;
+  Function(String)? onTextChanged;
 
   // ファイル保存場所を取得
   Future<String> getLocalFilePath() async {
@@ -110,15 +115,26 @@ class TtsService {
       return;
     }
 
-    // 現在のインデックスのテキストを読み上げ
-    String currentText = _textList[_currentIndex];
+    if (speak2nd) {
+      chosentext = lastText;
+      speak2nd = false;
+    } else {
+      // 現在のインデックスのテキストを読み上げ
+      chosentext = _textList[_currentIndex];
+      _currentIndex = (_currentIndex + 1) % _textList.length;
+    }
+    // ここでコールバックを呼び出し、chosentextの変更を通知
+    if (onTextChanged != null) {
+      onTextChanged!(chosentext);
+    }
+    currentText = chosentext.replaceAll(RegExp(r'\(.*?\)'), '').trim();
     logger.logWithTimestamp("Speaking: $currentText");
 
     await speak(currentText);
+    lastText = chosentext;
     await waitForCompletion();
 
     // インデックスを次に進める
-    _currentIndex = (_currentIndex + 1) % _textList.length;
   }
 
   // テキストを分割してリストに保存するメソッド

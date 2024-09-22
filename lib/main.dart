@@ -116,8 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _initialize() async {
-    await _initializeRecorder();
-    await _initializePlayer();
+//    await _initializeRecorder();
+//    await _initializePlayer();
 
     await _loadLanguages();
 

@@ -24,6 +24,7 @@ class TtsService {
   bool isSpeaking = false;
   String currentText = "";
   String chosentext = "";
+  bool skippedbyuser = false;
   Logger logger = Logger();
   List<String> _sentences = [];
   SharedPreferences? prefs;
@@ -123,6 +124,10 @@ class TtsService {
 
   // TtsService内の_addSentenceToDropdownを削除し、speakNextからも削除
   Future<void> speakNext() async {
+    if (skippedbyuser)
+      skippedbyuser = false;
+    else
+      _currentIndex = (_currentIndex + 1) % _textList.length;
     isSpeaking = true;
     if (_textList.isEmpty) {
       logger.logWithTimestamp("No text to speak.");
@@ -135,7 +140,6 @@ class TtsService {
     } else {
       // 現在のインデックスのテキストを読み上げ
       chosentext = _textList[_currentIndex];
-      _currentIndex = (_currentIndex + 1) % _textList.length;
     }
     // ここでコールバックを呼び出し、chosentextの変更を通知
     if (onTextChanged != null) {
@@ -287,8 +291,9 @@ class TtsService {
 
   void skipback(bool isskip) {
     logger.logWithTimestamp("AAA TTS skipback: 1 _currentIndex $_currentIndex _textList[_currentIndex] ${_textList[_currentIndex]}");
+    skippedbyuser = true;
     if (isskip) {
-      //_currentIndex++;
+      _currentIndex++;
       if (_currentIndex == _textList.length) _currentIndex = 0;
     } else {
       _currentIndex = _currentIndex - 1;

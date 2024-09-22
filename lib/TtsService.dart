@@ -25,6 +25,7 @@ class TtsService {
   String currentText = "";
   String chosentext = "";
   bool skippedbyuser = false;
+  bool firsttimestart = true;
   Logger logger = Logger();
   List<String> _sentences = [];
   SharedPreferences? prefs;
@@ -124,9 +125,10 @@ class TtsService {
 
   // TtsService内の_addSentenceToDropdownを削除し、speakNextからも削除
   Future<void> speakNext() async {
-    if (skippedbyuser)
+    if (skippedbyuser || firsttimestart) {
       skippedbyuser = false;
-    else
+      firsttimestart = false;
+    } else
       _currentIndex = (_currentIndex + 1) % _textList.length;
     isSpeaking = true;
     if (_textList.isEmpty) {
@@ -178,6 +180,7 @@ class TtsService {
       _currentIndex = _currentIndex - 1;
     else {
       _currentIndex = 0; // インデックスをリセット
+      firsttimestart = true;
     }
 //    isSpeaking = false
 

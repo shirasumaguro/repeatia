@@ -81,8 +81,21 @@ class TtsService {
       }
       logger.logWithTimestamp("Final sentences in setState: $_sentences");
     } catch (e) {
+      // ダウンロードが失敗した場合、ローカルファイルのセンテンスのみを使用
       logger.logWithTimestamp("Error downloading or processing sentences: $e");
       print("Error downloading sentences: $e");
+
+      // ローカルに保存されたセンテンスを取得
+      List<String> savedSentences = await loadSavedTexts();
+      logger.logWithTimestamp("Using only saved sentences from file due to download error: $savedSentences");
+
+      // ローカルファイルのセンテンスのみをセット
+      _sentences = savedSentences;
+
+      // コールバックを使ってデータを MyHomePageState に通知
+      if (onSentencesLoaded != null) {
+        onSentencesLoaded!(_sentences);
+      }
     }
   }
 
@@ -110,6 +123,7 @@ class TtsService {
 
   // TtsService内の_addSentenceToDropdownを削除し、speakNextからも削除
   Future<void> speakNext() async {
+    isSpeaking = true;
     if (_textList.isEmpty) {
       logger.logWithTimestamp("No text to speak.");
       return;
@@ -153,7 +167,21 @@ class TtsService {
   // テキストを分割してリストに保存するメソッド
   void setText(String text) {
     _textList = text.split('/').map((t) => t.trim()).toList(); // "/"で分割し、トリムしてリストに格納
-    _currentIndex = 0; // インデックスをリセット
+  }
+
+  void stopread(bool ispause) {
+    if (ispause)
+      _currentIndex = _currentIndex - 1;
+    else {
+      _currentIndex = 0; // インデックスをリセット
+    }
+//    isSpeaking = false
+
+    flutterTts.stop().then((_) {
+      logger.logWithTimestamp("TTS speaking forcibly stopped.");
+    }).catchError((error) {
+      logger.logWithTimestamp("Failed to stop TTS speaking: $error");
+    });
   }
 
 // ローカルにファイルとして保存する関数
@@ -255,6 +283,19 @@ class TtsService {
 
   Future<void> awaitSpeakCompletion(bool awaitCompletion) async {
     await flutterTts.awaitSpeakCompletion(awaitCompletion);
+  }
+
+  void skipback(bool isskip) {
+    logger.logWithTimestamp("AAA TTS skipback: 1 _currentIndex $_currentIndex _textList[_currentIndex] ${_textList[_currentIndex]}");
+    if (isskip) {
+      //_currentIndex++;
+      if (_currentIndex == _textList.length) _currentIndex = 0;
+    } else {
+      _currentIndex = _currentIndex - 1;
+      if (_currentIndex == -1) _currentIndex = _textList.length;
+    }
+    chosentext = _textList[_currentIndex];
+    logger.logWithTimestamp("AAA TTS skipback: 2 _currentIndex $_currentIndex _textList[_currentIndex] ${_textList[_currentIndex]}");
   }
 
   Future<void> waitForCompletion() async {

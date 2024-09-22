@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isRecording = false;
   bool isPlaying = false;
   bool isSpeaking = false;
+  bool pausing = false;
   bool _speedset = false;
   Map<String, Map<String, String>> _voiceMap = {};
 
@@ -595,6 +596,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _startLoop() async {
+    pausing = false;
     isStopped = false;
     if (textedited) {
       ttsService.saveText(textController.text);
@@ -672,18 +674,19 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _stopLoop() {
+  void skipback(bool isskip) {
+    ttsService.skipback(isskip);
+    setState(() {});
+  }
+
+  void _stopLoop(bool ispause) {
     logger.logWithTimestamp("AAA _stopLoop called");
-
+    if (ispause)
+      pausing = true;
+    else
+      pausing = false;
     _videoController?.pause();
-
-    ttsService.isSpeaking = false;
-    ttsService.flutterTts.stop().then((_) {
-      logger.logWithTimestamp("TTS speaking forcibly stopped.");
-    }).catchError((error) {
-      logger.logWithTimestamp("Failed to stop TTS speaking: $error");
-    });
-
+    ttsService.stopread(ispause);
     _speedset = false;
 
     if (_recorder.isRecording) {
@@ -739,13 +742,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    if (showImage && _selectedFilePath == null && isStopped)
+                    if (showImage && _selectedFilePath == null && isStopped && !pausing)
                       SizedBox(
                         width: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         height: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         child: Image.asset('assets/repeatiaicon.webp'),
                       ),
-                    if (_selectedFilePath == null && !isStopped)
+                    if (_selectedFilePath == null && (!isStopped || pausing))
                       Text(
                         ttsService.chosentext, // テキストを表示
                         style: TextStyle(
@@ -894,7 +897,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                       ),
-                    if (_sentences.isNotEmpty)
+                    if (!_sentences.isNotEmpty) Text('Please wait while the sentences are loading.', style: TextStyle(fontSize: 10)),
+                    if (_sentences.isNotEmpty && _selectedFilePath == null)
                       DropdownButton<String>(
                         value: _selectedSentence,
                         hint: Text("Select a sentence"),
@@ -946,15 +950,33 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ElevatedButton(
-                              onPressed: _startLoop,
-                              child: Text('Start session'),
-                            ),
-                            SizedBox(width: 20),
-                            ElevatedButton(
-                              onPressed: _stopLoop,
-                              child: Text('Stop session'),
-                            ),
+                            if (pausing || isStopped)
+                              ElevatedButton(
+                                onPressed: _startLoop,
+                                child: Text('Start'),
+                              ),
+                            //SizedBox(width: 20),
+                            if (!isStopped) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => _stopLoop(false), // 無名関数を使って遅延評価する
+                                child: Text('Stop'),
+                              ),
+                            //SizedBox(width: 20),
+                            if (!pausing && !isStopped) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => _stopLoop(true), // 無名関数を使って遅延評価する
+                                child: Text('Pause'),
+                              ),
+                            if (_selectedFilePath == null && (!isStopped || pausing)) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => skipback(false), // 無名関数を使って遅延評価する
+                                child: Text('<-'),
+                              ),
+                            if (_selectedFilePath == null && (!isStopped || pausing)) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => skipback(true), // 無名関数を使って遅延評価する
+                                child: Text('->'),
+                              ),
                           ],
                         ),
                         if (_videoController != null && _videoController!.value.isInitialized && _selectedFilePath != null)

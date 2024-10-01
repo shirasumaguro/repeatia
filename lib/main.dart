@@ -5,7 +5,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:audio_session/audio_session.dart' as audio_session;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -43,11 +43,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TtsService ttsService = TtsService();
   List<String> _sentences = [];
+  String displaytext = "";
+  Completer<void>? nextCompleter;
+
+  List<String> _textList = []; // テキストを保持するリスト
   double _pitch = 0.5; // デフォルトのピッチ
   double _speed = 0.5; // デフォルトのスピード
   double _speedvid = 0.5; // デフォルトの動画再生速度
   SharedPreferences? prefs;
   bool textedited = false;
+  bool answershowing = false;
+  bool inflash = false;
   String? _selectedSentence;
   final TextEditingController textController = TextEditingController(text: 'Sarah Perry was a veterinary nurse who had been working daily / at an old zoo in a deserted district of the territory.');
 
@@ -71,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _playChecked = true;
   List<String> _languages = [];
   String? _selectedFilePath;
+  int selectedindex = 0;
   VideoPlayerController? _videoController;
   String? _selectedFileName;
   List<Map<String, dynamic>> _voices = [];
@@ -79,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String? _selectedVoice; // 型を String? に変更
 
   bool isStopped = true;
+  bool inLoop = false;
 
   static const int silenceThreshold = 1500; // 3秒の無音判定
   StreamSubscription? _recorderSubscription;
@@ -116,9 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _initialize() async {
-//    await _initializeRecorder();
-//    await _initializePlayer();
-
     await _loadLanguages();
 
     await _loadVoices();
@@ -152,6 +157,11 @@ class _MyHomePageState extends State<MyHomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', language);
     await prefs.setString('voiceIdentifier', voiceIdentifier);
+    await prefs.setString('currentText', textController.text);
+    await prefs.setBool('speak1', _speak1Checked);
+    await prefs.setBool('speak2', _speak2Checked);
+    await prefs.setBool('record', _recordChecked);
+    await prefs.setBool('play', _playChecked);
     print("Settings saved: $language, $voiceIdentifier");
   }
 
@@ -159,6 +169,12 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs = await SharedPreferences.getInstance();
     String? language = prefs?.getString('language');
     String? voiceIdentifier = prefs?.getString('voiceIdentifier');
+    textController.text = prefs!.getString('currentText')!;
+    _speak1Checked = prefs!.getBool('speak1')!;
+    _speak2Checked = prefs!.getBool('speak2')!;
+    _recordChecked = prefs!.getBool('record')!;
+    _playChecked = prefs!.getBool('play')!;
+
     logger.logWithTimestamp("AAA loadSetting start - language: $language, voiceIdentifier: $voiceIdentifier");
 
     try {
@@ -448,7 +464,7 @@ class _MyHomePageState extends State<MyHomePage> {
       await speaksum();
       logger.logWithTimestamp("AAA _speakAndRecord after speaksum");
     }
-    if (isStopped) {
+    if (!inLoop) {
       setState(() {
         isSpeaking = false;
         isRecording = false;
@@ -470,7 +486,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       await _startRecording();
     }
-    if (isStopped) {
+    if (!inLoop) {
       setState(() {
         isSpeaking = false;
         isRecording = false;
@@ -487,7 +503,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ttsService.speak2nd = true;
       await speaksum();
     }
-    if (isStopped) {
+    if (!inLoop) {
       setState(() {
         isSpeaking = false;
         isRecording = false;
@@ -595,9 +611,79 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _startflash() async {
+    if (_selectedLanguage != null && _selectedVoice != null) {
+      saveSettings(_selectedLanguage!, _selectedVoice!);
+    }
+
+    inflash = true;
+    String question = "";
+
+    _textList = textController.text.split('/').map((t) => t.trim()).toList(); // "/"で分割し、トリムしてリストに格納
+
+    Random random = Random(); // Randomインスタンスを作成
+
+    while (inflash) {
+      logger.logWithTimestamp("AAA in _startflash $question"); // 実際のアプリケーションではここに何かしらの処理が入る
+      nextCompleter = Completer<void>();
+
+      // リストからランダムに選択
+      if (_textList.isNotEmpty) {
+        selectedindex = random.nextInt(_textList.length);
+        String selectedText = _textList[selectedindex];
+        // 選択した文字列から[]内のテキストを抜き出す
+        RegExp regExp = RegExp(r'\[(.*?)\]');
+        var matches = regExp.allMatches(selectedText);
+        if (matches.isNotEmpty) {
+          // 最初に見つかったマッチの中身をquestion変数に格納
+          String question = matches.first.group(1)!;
+          displaytext = question;
+          setState(() {});
+
+          // question を利用した処理（例えば状態の更新やUIの更新）
+          logger.logWithTimestamp("AAA in _startflash loop $question"); // 実際のアプリケーションではここに何かしらの処理が入る
+          if (_recordChecked) {
+            platform.invokeMethod('playBeepng');
+            await _startRecording();
+          } else {
+            await nextCompleter?.future;
+          }
+          answershowing = true;
+          nextCompleter = Completer<void>();
+          displaytext = selectedText;
+          setState(() {});
+          if (_speak1Checked) {
+            String matches = displaytext.replaceAll(RegExp(r'\(.*?\)'), '');
+            matches = matches.replaceAll(RegExp(r'\[.*?\]'), '');
+            logger.logWithTimestamp("AAA in _startflash speak $matches"); // 実際のアプリケーションではここに何かしらの処理が入る
+
+            await ttsService.speak(matches);
+            await ttsService.waitForCompletion();
+          }
+        }
+      }
+      //await Future.delayed(Duration(seconds: 1)); // 1秒待機
+
+      await nextCompleter?.future;
+      answershowing = false;
+    }
+  }
+
+  Future<void> skipflash() async {
+    if (_textList.length > 2 && selectedindex >= 0 && selectedindex < _textList.length) {
+      // 残り2個以下は削除しない
+      _textList.removeAt(selectedindex);
+    }
+
+    if (!nextCompleter!.isCompleted) {
+      nextCompleter?.complete();
+    }
+  }
+
   Future<void> _startLoop() async {
     pausing = false;
-    isStopped = false;
+    inLoop = true;
+
     if (textedited) {
       ttsService.saveText(textController.text);
       textedited = false;
@@ -607,7 +693,7 @@ class _MyHomePageState extends State<MyHomePage> {
       saveSettings(_selectedLanguage!, _selectedVoice!);
     }
 
-    while (!isStopped) {
+    while (inLoop) {
       await _speakAndRecord();
       await Future.delayed(Duration(seconds: 1));
     }
@@ -679,6 +765,28 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  void _flashNext(bool ispause) {
+    logger.logWithTimestamp("AAA _flashNext called");
+    ttsService.stopread(false);
+
+    if (_recorder.isRecording) {
+      _recorder.stopRecorder();
+      setState(() {
+        isRecording = false;
+      });
+    }
+
+    if (_player.isPlaying) {
+      _player.stopPlayer();
+      setState(() {
+        isPlaying = false;
+      });
+    }
+    if (!nextCompleter!.isCompleted) {
+      nextCompleter?.complete();
+    }
+  }
+
   void _stopLoop(bool ispause) {
     logger.logWithTimestamp("AAA _stopLoop called");
     if (ispause)
@@ -704,7 +812,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     setState(() {
-      isStopped = true;
+      inLoop = false;
+      inflash = false;
       isSpeaking = false;
       isRecording = false;
       isPlaying = false;
@@ -742,15 +851,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    if (showImage && _selectedFilePath == null && isStopped && !pausing)
+                    if (showImage && _selectedFilePath == null && !inLoop && !pausing && !inflash)
                       SizedBox(
                         width: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         height: 3 * MediaQuery.of(context).devicePixelRatio * 22.54,
                         child: Image.asset('assets/repeatiaicon.webp'),
                       ),
-                    if (_selectedFilePath == null && (!isStopped || pausing))
+                    if (_selectedFilePath == null && (inLoop || pausing || inflash))
                       Text(
-                        ttsService.chosentext, // テキストを表示
+                        "${ttsService.chosentext} $displaytext", // テキストを表示
                         style: TextStyle(
                           fontSize: 18.0, // テキストのサイズを調整
                           color: Colors.black, // 必要に応じて色も変更
@@ -873,7 +982,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         });
                       },
                     ),
-                    if (_selectedFilePath == null)
+                    if (_selectedFilePath == null && !inflash && !inLoop)
                       TextField(
                         controller: textController,
                         decoration: InputDecoration(
@@ -897,8 +1006,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                       ),
-                    if (!_sentences.isNotEmpty) Text('Please wait while the sentences are loading.', style: TextStyle(fontSize: 10)),
-                    if (_sentences.isNotEmpty && _selectedFilePath == null)
+                    if (!_sentences.isNotEmpty) Text('Loading sentences.', style: TextStyle(fontSize: 10)),
+                    if (_sentences.isNotEmpty && _selectedFilePath == null && !inflash && !inLoop)
                       DropdownButton<String>(
                         value: _selectedSentence,
                         hint: Text("Select a sentence"),
@@ -920,7 +1029,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                         isExpanded: true,
                       ),
-                    if (_selectedFilePath == null)
+                    if (_selectedFilePath == null && !inflash && !inLoop)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -932,7 +1041,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     Column(
                       children: [
-                        if (_selectedFilePath != null)
+                        if (_selectedFilePath != null && !inflash && !inLoop)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -950,29 +1059,45 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (pausing || isStopped)
+                            if ((pausing || !inLoop) && !inflash)
                               ElevatedButton(
                                 onPressed: _startLoop,
                                 child: Text('Start'),
                               ),
+                            SizedBox(width: 20),
+                            if ((pausing || !inLoop) && !inflash)
+                              ElevatedButton(
+                                onPressed: _startflash,
+                                child: Text('Flashcards'),
+                              ),
                             //SizedBox(width: 20),
-                            if (!isStopped) // pause が true の場合、ボタンを表示しない
+                            if (inLoop || inflash) // pause が true の場合、ボタンを表示しない
                               ElevatedButton(
                                 onPressed: () => _stopLoop(false), // 無名関数を使って遅延評価する
                                 child: Text('Stop'),
                               ),
                             //SizedBox(width: 20),
-                            if (!pausing && !isStopped) // pause が true の場合、ボタンを表示しない
+                            if (!pausing && inLoop) // pause が true の場合、ボタンを表示しない
                               ElevatedButton(
                                 onPressed: () => _stopLoop(true), // 無名関数を使って遅延評価する
                                 child: Text('Pause'),
                               ),
-                            if (_selectedFilePath == null && (!isStopped || pausing)) // pause が true の場合、ボタンを表示しない
+                            if (inflash) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => _flashNext(true),
+                                child: Text('Next'),
+                              ),
+                            if (answershowing) // pause が true の場合、ボタンを表示しない
+                              ElevatedButton(
+                                onPressed: () => skipflash(),
+                                child: Text('Skip'),
+                              ),
+                            if (_selectedFilePath == null && (inLoop || pausing)) // pause が true の場合、ボタンを表示しない
                               ElevatedButton(
                                 onPressed: () => skipback(false), // 無名関数を使って遅延評価する
                                 child: Text('<-'),
                               ),
-                            if (_selectedFilePath == null && (!isStopped || pausing)) // pause が true の場合、ボタンを表示しない
+                            if (_selectedFilePath == null && (inLoop || pausing)) // pause が true の場合、ボタンを表示しない
                               ElevatedButton(
                                 onPressed: () => skipback(true), // 無名関数を使って遅延評価する
                                 child: Text('->'),
@@ -1043,47 +1168,48 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ],
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text('About'),
-                                  content: Text('2024 Misota Michael All rights reserved. \n\n The copyright for the sample text, "Comma Gets a Cure," is as follows:   © Copyright 2000 Douglas N. Honorof, Jill McCullough & Barbara Somerville. All rights reserved.'),
-                                  actions: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('OK'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: Text('About'),
-                        ),
-                        SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setting();
-                          },
-                          child: Text('Setting'),
-                        ),
-                        SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            editSentence();
-                          },
-                          child: Text('Edit sentences'),
-                        ),
-                      ],
-                    ),
+                    if (!inflash && !inLoop)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('About'),
+                                    content: Text('2024 Misota Michael All rights reserved. \n\n The copyright for the sample text, "Comma Gets a Cure," is as follows:   © Copyright 2000 Douglas N. Honorof, Jill McCullough & Barbara Somerville. All rights reserved.'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('OK'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Text('About'),
+                          ),
+                          SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              setting();
+                            },
+                            child: Text('Setting'),
+                          ),
+                          SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              editSentence();
+                            },
+                            child: Text('Edit sentences'),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),

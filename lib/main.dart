@@ -651,9 +651,11 @@ class _MyHomePageState extends State<MyHomePage> {
             await Future.delayed(Duration(milliseconds: 500));
             setState(() {});
             await _startRecording();
+            logger.logWithTimestamp("AAA in _startflash _startRecording end"); // 実際のアプリケーションではここに何かしらの処理が入る
           } else {
             await nextCompleter?.future;
           }
+          logger.logWithTimestamp("AAA in _startflash showing answer"); // 実際のアプリケーションではここに何かしらの処理が入る
           answershowing = true;
           nextCompleter = Completer<void>();
           displaytext = selectedText;

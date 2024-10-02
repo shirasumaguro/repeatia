@@ -782,6 +782,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (_recorder.isRecording) {
       _recorder.stopRecorder();
+      _recordingCompleter?.complete();
       setState(() {
         isRecording = false;
       });

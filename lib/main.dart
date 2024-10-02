@@ -480,7 +480,7 @@ class _MyHomePageState extends State<MyHomePage> {
       await Future.delayed(Duration(milliseconds: 400));
 
       platform.invokeMethod('playBeepng');
-
+      await Future.delayed(Duration(milliseconds: 200));
       setState(() {
         isSpeaking = false;
         isRecording = true;
@@ -648,6 +648,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (_recordChecked) {
             await Future.delayed(Duration(milliseconds: 300));
             platform.invokeMethod('playBeepng');
+            await Future.delayed(Duration(milliseconds: 200));
             setState(() {});
             await _startRecording();
           } else {

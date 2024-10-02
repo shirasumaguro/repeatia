@@ -211,7 +211,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     lang.startsWith('de-') || // ドイツ語
                     lang.startsWith('th-') || // タイ語
                     lang.startsWith('vi-') || // ベトナム語
-                    lang.startsWith('fr-') // フランス語
+                    lang.startsWith('pt-') || // フランス語
+                    lang.startsWith('fr-') || // フランス語
+                    lang.startsWith('ko-') //韓国語
                 )
             .toList();
       });

@@ -646,6 +646,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // question を利用した処理（例えば状態の更新やUIの更新）
           logger.logWithTimestamp("AAA in _startflash loop $question"); // 実際のアプリケーションではここに何かしらの処理が入る
           if (_recordChecked) {
+            await Future.delayed(Duration(milliseconds: 300));
             platform.invokeMethod('playBeepng');
             await _startRecording();
           } else {

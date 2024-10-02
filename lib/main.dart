@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isStopped = true;
   bool inLoop = false;
 
-  static const int silenceThreshold = 1500; // 3秒の無音判定
+  static const int silenceThreshold = 800; // 3秒の無音判定
   StreamSubscription? _recorderSubscription;
   Completer<void>? _recordingCompleter;
   String? selectedLanguage;
@@ -477,16 +477,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_recordChecked) {
       logger.logWithTimestamp("AAA _speakAndRecord 1.2");
       logger.logWithTimestamp("AAA _speakAndRecord 2");
-      await Future.delayed(Duration(milliseconds: 200));
+      await Future.delayed(Duration(milliseconds: 400));
+
+      platform.invokeMethod('playBeepng');
+
       setState(() {
         isSpeaking = false;
         isRecording = true;
         isPlaying = false;
       });
-      await Future.delayed(Duration(milliseconds: 200));
-      platform.invokeMethod('playBeepng');
-      await Future.delayed(Duration(milliseconds: 100));
-
       await _startRecording();
     }
     if (!inLoop) {

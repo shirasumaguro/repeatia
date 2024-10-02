@@ -147,7 +147,8 @@ class TtsService {
     if (onTextChanged != null) {
       onTextChanged!(chosentext);
     }
-    currentText = chosentext.replaceAll(RegExp(r'\(.*?\)'), '').trim();
+
+    currentText = chosentext.replaceAll(RegExp(r'\(.*?\)|\[.*?\]'), '').trim();
     logger.logWithTimestamp("Speaking: $currentText");
 
     await speak(currentText);

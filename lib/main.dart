@@ -648,6 +648,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (_recordChecked) {
             await Future.delayed(Duration(milliseconds: 300));
             platform.invokeMethod('playBeepng');
+            setState(() {});
             await _startRecording();
           } else {
             await nextCompleter?.future;

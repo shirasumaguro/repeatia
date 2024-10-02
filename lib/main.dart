@@ -614,6 +614,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _startflash() async {
+    ttsService.chosentext = "";
     if (_selectedLanguage != null && _selectedVoice != null) {
       saveSettings(_selectedLanguage!, _selectedVoice!);
     }
@@ -790,6 +791,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopLoop(bool ispause) {
+    displaytext = "";
+    answershowing = false;
     logger.logWithTimestamp("AAA _stopLoop called");
     if (ispause)
       pausing = true;

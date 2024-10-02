@@ -800,6 +800,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopLoop(bool ispause) {
+    answershowing = false;
     logger.logWithTimestamp("AAA _stopLoop called");
     if (ispause)
       pausing = true;

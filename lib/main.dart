@@ -483,6 +483,7 @@ class _MyHomePageState extends State<MyHomePage> {
         isRecording = true;
         isPlaying = false;
       });
+      await Future.delayed(Duration(milliseconds: 200));
       platform.invokeMethod('playBeepng');
       await Future.delayed(Duration(milliseconds: 100));
 
@@ -686,6 +687,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _startLoop() async {
     pausing = false;
     inLoop = true;
+    displaytext = "";
+    answershowing = false;
+    inflash = false;
 
     if (textedited) {
       ttsService.saveText(textController.text);
@@ -791,8 +795,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopLoop(bool ispause) {
-    displaytext = "";
-    answershowing = false;
     logger.logWithTimestamp("AAA _stopLoop called");
     if (ispause)
       pausing = true;

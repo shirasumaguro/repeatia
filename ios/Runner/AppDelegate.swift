@@ -26,7 +26,8 @@ import AudioToolbox
         print("\(self.TAG): Beep sound played (ok)")
       } else if call.method == "playBeepng" {
         print("\(self.TAG): playBeepng method called")
-        AudioServicesPlaySystemSound(1254) // 1200 is the system sound ID for a different beep sound
+        //AudioServicesPlaySystemSound(1254) // 1200 is the system sound ID for a different beep sound
+        AudioServicesPlaySystemSound(1256) // 1200 is the system sound ID for a different beep sound
         result(nil)
         print("\(self.TAG): Beep sound played (ng)")
       } else {

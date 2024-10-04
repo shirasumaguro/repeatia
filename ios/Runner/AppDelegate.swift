@@ -4,7 +4,7 @@ import AudioToolbox
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
-  private let CHANNEL = "com.shirasumaguro.kizam/beep"
+  private let CHANNEL = "com.shirasumaguro.repeatia/beep"
   private let TAG = "AppDelegate"
 
   override func application(

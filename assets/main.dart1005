@@ -61,9 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool answershowing = false;
   bool inflash = false;
   String? _selectedSentence;
-  final TextEditingController textController = TextEditingController(
-      text:
-          "(英語圏旅行フレーズ) [こんにちは] Hello /[ありがとう] Thank you /[すみません] Excuse me /[はい] Yes /[いいえ] No /[お願いします] Please /[トイレどこですか？] Where is the restroom? /[これ下さい] I'd like this /[理解できません] I don't understand /[大丈夫です] No problem /[最高です] Excellent /[ちょっと待って] Wait a minute /[止まって] Stop /[お先にどうぞ] Go ahead /[要りません] I don't need it /[結構です] No, thank you /[見てもいいですか？] Can I take a look? /[どういたしまして] You're welcome /[ごめんなさい] I'm sorry /[ゴミ箱どこですか？] Where is the trash can? /[店内で] For here /[お持ち帰りで] To go /[1名] One person /[2名] Two people /[熱い] Hot /[冷たい] Cold /[お釣りを下さい。] Please give me my change /[お釣りはいりません。] Keep the change /[メニューをください] May I have the menu? /[おすすめは？] What do you recommend? /[いくらですか？] How much is this? /[以上です] That's all /[ビールください] A beer, please /[水を下さい] Water, please /[小皿を下さい] A small plate, please /[お箸はありますか？] Do you have chopsticks? /[パクチーはいれないで] No cilantro, please /[辛くして] Make it spicy /[大きい] Large /[中くらい] Medium /[小さい] Small /[急いでください] Please hurry /[どのくらいかかりますか？] How long will it take? /[おいしいです。] It's delicious /[包んでください] Please wrap it up /[お会計をお願いします] Check, please /[駅まで行ってください。] Please take me to the station /[英語話せますか？] Do you speak English? /[日本人です] I'm a Japanese /[英語話せません] I don't speak English /[私はアメリカ人ではありません] I'm not an American");
+  final TextEditingController textController = TextEditingController(text: 'Sarah Perry was a veterinary nurse who had been working daily / at an old zoo in a deserted district of the territory.');
 
   static const platform = MethodChannel('com.shirasumaguro.repeatia/beep');
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -112,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _initializePlayer();
     // Wake Lockを有効化して、アプリがアクティブな間画面をスリープさせない
     WakelockPlus.enable();
-    logger.logWithTimestamp("AAA before _initialize _selectedlanguage $_selectedLanguage");
+
     _initialize();
 
     _checkPermissions();
@@ -135,26 +133,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _initializeSpeech() async {
     bool available = await _speech.initialize(
-      onStatus: (val) {
-        logger.logWithTimestamp("AAA onStatus: $val");
-        /*// リスニングが終了した場合、Completerを完了させる
-        if (val == 'done' || val == 'notListening') {
-          if (!_recognitionCompleter.isCompleted) {
-            _recognitionCompleter.complete();
-          }
-        }
-         */
-      },
-      onError: (val) {
-        logger.logWithTimestamp("AAA onError: $val");
-        _isListening = false;
-        // エラーが発生した場合、Completerを完了させる
-        if (!_recognitionCompleter.isCompleted) {
-          _recognitionCompleter.complete();
-        }
-      },
+      onStatus: (val) => logger.logWithTimestamp("AAA onStatus: $val"),
+      onError: (val) => logger.logWithTimestamp("AAA onError: $val"),
     );
-
     if (!available) {
       print('The user has denied the use of speech recognition.');
     } else {
@@ -168,6 +149,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (!_isListening) {
       setState(() => _isListening = true);
+      // 既存のタイマーがある場合はキャンセル
+      _timeoutTimer?.cancel();
+
+      // タイムアウトの監視 (20秒でタイムアウト)
+/*
+      _timeoutTimer = Timer(Duration(milliseconds: 5300), () {
+        if (_isListening) {
+          logger.logWithTimestamp("AAA in _listen timeout, stopping and restarting");
+          _initializeSpeech();
+          _speech.stop(); // タイムアウトしたら一度停止
+          setState(() {
+            _isListening = false;
+          });
+          _listen(); // 再度リスニングを開始
+        }
+      });
+
+ */
 
       _speech.listen(
         onResult: (result) {
@@ -238,19 +237,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> loadSettings() async {
     prefs = await SharedPreferences.getInstance();
-    String? language = prefs?.getString('language') ?? "en-US";
+    String? language = prefs?.getString('language');
     String? voiceIdentifier = prefs?.getString('voiceIdentifier');
-
-    // currentTextが存在しない場合にはデフォルトのテキストを指定する
-    String defaultText =
-        "(英語圏旅行フレーズ) [こんにちは] Hello /[ありがとう] Thank you /[すみません] Excuse me /[はい] Yes /[いいえ] No /[お願いします] Please /[トイレどこですか？] Where is the restroom? /[これ下さい] I'd like this /[理解できません] I don't understand /[大丈夫です] No problem /[最高です] Excellent /[ちょっと待って] Wait a minute /[止まって] Stop /[お先にどうぞ] Go ahead /[要りません] I don't need it /[結構です] No, thank you /[見てもいいですか？] Can I take a look? /[どういたしまして] You're welcome /[ごめんなさい] I'm sorry /[ゴミ箱どこですか？] Where is the trash can? /[店内で] For here /[お持ち帰りで] To go /[1名] One person /[2名] Two people /[熱い] Hot /[冷たい] Cold /[お釣りを下さい。] Please give me my change /[お釣りはいりません。] Keep the change /[メニューをください] May I have the menu? /[おすすめは？] What do you recommend? /[いくらですか？] How much is this? /[以上です] That's all /[ビールください] A beer, please /[水を下さい] Water, please /[小皿を下さい] A small plate, please /[お箸はありますか？] Do you have chopsticks? /[パクチーはいれないで] No cilantro, please /[辛くして] Make it spicy /[大きい] Large /[中くらい] Medium /[小さい] Small /[急いでください] Please hurry /[どのくらいかかりますか？] How long will it take? /[おいしいです。] It's delicious /[包んでください] Please wrap it up /[お会計をお願いします] Check, please /[駅まで行ってください。] Please take me to the station /[英語話せますか？] Do you speak English? /[日本人です] I'm a Japanese /[英語話せません] I don't speak English /[私はアメリカ人ではありません] I'm not an American";
-
-    // textControllerがnullでないか確認し、currentTextを取得
-    textController.text = prefs?.getString('currentText') ?? defaultText;
-    _speak1Checked = prefs?.getBool('speak1') ?? true;
-    _speak2Checked = prefs?.getBool('speak2') ?? false;
-    _recordChecked = prefs?.getBool('record') ?? true;
-    _playChecked = prefs?.getBool('play') ?? true;
+    textController.text = prefs!.getString('currentText')!;
+    _speak1Checked = prefs!.getBool('speak1')!;
+    _speak2Checked = prefs!.getBool('speak2')!;
+    _recordChecked = prefs!.getBool('record')!;
+    _playChecked = prefs!.getBool('play')!;
 
     logger.logWithTimestamp("AAA loadSetting start - language: $language, voiceIdentifier: $voiceIdentifier");
 
@@ -690,58 +683,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void extractAndSetLanguage() {
-    // textController.text から (LANG:en-US) の形式の文字列を探す
-    RegExp regExp = RegExp(r'\(LANG:([a-zA-Z\-]+)\)');
-    RegExpMatch? match = regExp.firstMatch(textController.text);
-
-    // マッチが見つかった場合、その中の言語コードを _selectedLanguage に代入
-    if (match != null) {
-      _selectedLanguage = match.group(1); // "en-US" の部分を抽出
-      logger.logWithTimestamp("Extracted language: $_selectedLanguage");
-    } else {
-      logger.logWithTimestamp("No language code found");
-    }
-
-    ttsService.setLanguage(_selectedLanguage!);
-
-    // 新しい言語に応じて声の一覧をロード
-    _loadVoices().then((_) {
-      logger.logWithTimestamp("AAA _selectedLanguage _loadVoices finished");
-
-      // firstWhereのorElseで空のMap<String, String>を返すように修正
-      var newVoice = _voices.firstWhere(
-        (voice) => voice['locale']!.startsWith(_selectedLanguage),
-        orElse: () => <String, String>{}, // 空のMap<String, String>を返す
-      );
-
-      logger.logWithTimestamp("AAA _selectedLanguage newVoice $newVoice");
-
-      if (newVoice.isNotEmpty) {
-        // identifier が null か確認し、null であればデフォルトの identifier を設定
-        if (newVoice['identifier'] != null && newVoice['identifier']!.isNotEmpty) {
-          setState(() {
-            _selectedVoice = newVoice['identifier'];
-            logger.logWithTimestamp("AAA _selectedVoice updated to $_selectedVoice");
-          });
-        } else {
-          // identifier が null または空の場合、デフォルト値を設定
-          setState(() {
-            _selectedVoice = "${newVoice['name']}-${newVoice['locale']}"; // デフォルトの identifier を設定
-            logger.logWithTimestamp("AAA newVoice['identifier'] is null or empty, setting _selectedVoice to default $_selectedVoice");
-          });
-        }
-      } else {
-        setState(() {
-          _selectedVoice = null;
-          logger.logWithTimestamp("AAA _selectedVoice set to null");
-        });
-      }
-    });
-  }
-
   Future<void> _startflash() async {
-    extractAndSetLanguage();
     ttsService.chosentext = "";
     if (_selectedLanguage != null && _selectedVoice != null) {
       saveSettings(_selectedLanguage!, _selectedVoice!);
@@ -771,7 +713,7 @@ class _MyHomePageState extends State<MyHomePage> {
           displaytext = question;
           setState(() {});
 
-          // ユーザーの答え入力
+          // question を利用した処理（例えば状態の更新やUIの更新）
           logger.logWithTimestamp("AAA in _startflash loop $question");
           if (_recordChecked) {
             await Future.delayed(Duration(milliseconds: 100));
@@ -781,17 +723,9 @@ class _MyHomePageState extends State<MyHomePage> {
             }
             setState(() {});
             //await _startRecording();
-            _recogtext = "";
-            displaytext2 = "Tell the answer!";
-
-            while (_recogtext == "") {
-              logger.logWithTimestamp("AAA in _startflash _listen loop1 1　recogtext $_recogtext");
-              await Future.delayed(Duration(milliseconds: 200));
-              _recognitionCompleter = Completer<void>();
-              await _listen();
-              await _recognitionCompleter.future;
-              logger.logWithTimestamp("AAA in _startflash _listen loop1 2 recogtext $_recogtext");
-            }
+            _recognitionCompleter = Completer<void>();
+            await _listen();
+            await _recognitionCompleter.future;
             logger.logWithTimestamp("AAA in _startflash _listen end1");
           } else {
             await nextCompleter?.future;
@@ -831,7 +765,7 @@ class _MyHomePageState extends State<MyHomePage> {
         } else if (_selectedLanguage!.startsWith('ja-')) {
           nextword = "次";
         } else if (_selectedLanguage!.startsWith('zh-')) {
-          nextword = "下一个"; // 中国語 (簡体字) - "xià yī bù"
+          nextword = "下一步"; // 中国語 (簡体字) - "xià yī bù"
         } else if (_selectedLanguage!.startsWith('es-')) {
           nextword = "siguiente"; // スペイン語
         } else if (_selectedLanguage!.startsWith('ko-')) {
@@ -851,14 +785,13 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         displaytext2 = "Say \"$nextword\" to go next.";
         while (_recogtext != nextword && inflash) {
-          logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
+          logger.logWithTimestamp("AAA in _startflash loop recogtext  $_recogtext "); // 実際のアプリケーションではここに何かしらの処理が入る
           await Future.delayed(Duration(milliseconds: 200));
           _recognitionCompleter = Completer<void>();
           await _listen();
           await _recognitionCompleter.future;
-          logger.logWithTimestamp("AAA in _startflash loop2 recogtext 2 $_recogtext ");
         }
-        logger.logWithTimestamp("AAA in _startflash _listen end2");
+        logger.logWithTimestamp("AAA in _startflash _listen end2"); // 実際のアプリケーションではここに何かしらの処理が入る
       } else {
         await nextCompleter?.future;
       }
@@ -1250,7 +1183,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           setState(() {
                             _selectedSentence = newValue;
                             textController.text = newValue ?? '';
-                            extractAndSetLanguage();
                           });
                         },
                         isExpanded: true,

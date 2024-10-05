@@ -36,6 +36,7 @@ dependencies:
   record:
   wakelock_plus:
   audioplayers:
+  speech_to_text:
   logger:
   audio_session:
   permission_handler: ^11.3.1

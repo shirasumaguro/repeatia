@@ -852,7 +852,7 @@ class _MyHomePageState extends State<MyHomePage> {
           nextword = "next"; // デフォルトは英語にする場合
         }
         displaytext2 = "$displaytext2 \n To go next, say \"$nextword\".";
-        while (_recogtext != nextword && inflash) {
+        while (_recogtext.toLowerCase() != nextword.toLowerCase() && inflash) {
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
           await Future.delayed(Duration(milliseconds: 200));
           _recognitionCompleter = Completer<void>();

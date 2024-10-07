@@ -828,7 +828,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _recognitionCompleter = Completer<void>();
         _recogtext = "";
         String nextword = "next";
-        String skipword="skip";
+        String skipword = "skip";
 
         if (_selectedLanguage!.startsWith('en-')) {
           nextword = "next";
@@ -863,7 +863,7 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           nextword = "next"; // デフォルトは英語にする場合
         }
-        displaytext2 = "$displaytext2 \n To go next, say \"$nextword\". \nTo skip it, say \"$skipword\".;
+        displaytext2 = "$displaytext2 \n To go next, say \"$nextword\". \nTo skip it, say \"$skipword\".";
         while (!gonext && (_recogtext.toLowerCase() != nextword.toLowerCase() && inflash)) {
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
           await Future.delayed(Duration(milliseconds: 200));

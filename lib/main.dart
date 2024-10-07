@@ -174,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           logger.logWithTimestamp("AAA in _listen onResult result.finalResult ${result.finalResult} $_recogtext");
           setState(() {
             // IOSの場合はfinalResultがfalseで終わる
-            if (result.finalResult || Platform.isIOS) {
+            if (result.finalResult && Platform.isIOS || Platform.isAndroid) {
               _recogtext = result.recognizedWords;
               logger.logWithTimestamp("AAA in _listen onResult in if block result.finalResult ${result.finalResult} $_recogtext");
               _isListening = false;

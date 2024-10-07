@@ -50,6 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late Completer<void> _recognitionCompleter;
   late stt.SpeechToText _speech; // 'late' キーワードを使用
   bool _isListening = false;
+  bool gonext=false;
   List<String> _textList = []; // テキストを保持するリスト
   double _pitch = 0.5; // デフォルトのピッチ
   double _speed = 0.5; // デフォルトのスピード
@@ -851,7 +852,7 @@ class _MyHomePageState extends State<MyHomePage> {
           nextword = "next"; // デフォルトは英語にする場合
         }
         displaytext2 = "$displaytext2 \n To go next, say \"$nextword\".";
-        while (_recogtext.toLowerCase() != nextword.toLowerCase() && inflash) {
+        while (gonext|| (_recogtext.toLowerCase() != nextword.toLowerCase() && inflash)) {
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
           await Future.delayed(Duration(milliseconds: 200));
           _recognitionCompleter = Completer<void>();
@@ -864,6 +865,7 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {});
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext 2 $_recogtext ");
         }
+        gonext=false
         logger.logWithTimestamp("AAA in _startflash _listen end2");
       } else {
         await nextCompleter?.future;
@@ -993,6 +995,7 @@ class _MyHomePageState extends State<MyHomePage> {
         isPlaying = false;
       });
     }
+    gonext=true;
     if (!nextCompleter!.isCompleted) {
       nextCompleter?.complete();
     }

@@ -899,7 +899,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _textList.removeAt(selectedindex);
     }
     gonext = true;
-    if (!_recognitionCompleter!.isCompleted) {
+    if (_recordChecked) {
       _recognitionCompleter.complete(); // 認識が完了したことをCompleterに通知
     }
     if (!nextCompleter!.isCompleted) {
@@ -999,7 +999,9 @@ class _MyHomePageState extends State<MyHomePage> {
     logger.logWithTimestamp("AAA _flashNext called");
     ttsService.stopread(false);
     _speech.stop();
-    _recognitionCompleter.complete(); // 認識が完了したことをCompleterに通知
+    if (_recordChecked) {
+      _recognitionCompleter.complete(); // 認識が完了したことをCompleterに通知
+    }
 
     if (_recorder.isRecording) {
       _recorder.stopRecorder();

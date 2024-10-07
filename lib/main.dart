@@ -786,7 +786,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _recogtext = "";
             displaytext2 = "Tell the answer!";
 
-            while (_recogtext == "") {
+            while (!gonext && _recogtext == "") {
               logger.logWithTimestamp("AAA in _startflash _listen loop1 1　recogtext $_recogtext");
               await Future.delayed(Duration(milliseconds: 200));
               _recognitionCompleter = Completer<void>();
@@ -794,6 +794,7 @@ class _MyHomePageState extends State<MyHomePage> {
               await _recognitionCompleter.future;
               logger.logWithTimestamp("AAA in _startflash _listen loop1 2 recogtext $_recogtext");
             }
+            gonext = false;
             logger.logWithTimestamp("AAA in _startflash _listen end1");
           } else {
             await nextCompleter?.future;

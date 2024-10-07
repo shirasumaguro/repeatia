@@ -292,6 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     lang.startsWith('vi-') || // ベトナム語
                     lang.startsWith('pt-') || // フランス語
                     lang.startsWith('fr-') || // フランス語
+                    lang.startsWith('ar-') || // フランス語
                     lang.startsWith('ko-') //韓国語
                 )
             .toList();

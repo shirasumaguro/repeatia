@@ -828,31 +828,42 @@ class _MyHomePageState extends State<MyHomePage> {
         _recognitionCompleter = Completer<void>();
         _recogtext = "";
         String nextword = "next";
+        String skipword="skip";
 
         if (_selectedLanguage!.startsWith('en-')) {
           nextword = "next";
+          skipword = "skip";
         } else if (_selectedLanguage!.startsWith('ja-')) {
           nextword = "次";
+          skipword = "スキップ";
         } else if (_selectedLanguage!.startsWith('zh-')) {
           nextword = "下一个"; // 中国語 (簡体字) - "xià yī bù"
+          skipword = "跳过";
         } else if (_selectedLanguage!.startsWith('es-')) {
           nextword = "siguiente"; // スペイン語
+          skipword = "Saltar";
         } else if (_selectedLanguage!.startsWith('ko-')) {
           nextword = "다음"; // 韓国語 - "다음" (da-eum)
+          skipword = "건너뛰기";
         } else if (_selectedLanguage!.startsWith('fr-')) {
           nextword = "suivant"; // フランス語
+          skipword = "Sauter";
         } else if (_selectedLanguage!.startsWith('de-')) {
           nextword = "weiter"; // ドイツ語
+          skipword = "Überspringen";
         } else if (_selectedLanguage!.startsWith('pt-')) {
           nextword = "próximo"; // ポルトガル語
+          skipword = "Pular";
         } else if (_selectedLanguage!.startsWith('th-')) {
           nextword = "ถัดไป"; // タイ語 - "thạ̀tpị"
+          skipword = "ข้าม";
         } else if (_selectedLanguage!.startsWith('vi-')) {
           nextword = "tiếp theo"; // ベトナム語
+          skipword = "Bỏ qua";
         } else {
           nextword = "next"; // デフォルトは英語にする場合
         }
-        displaytext2 = "$displaytext2 \n To go next, say \"$nextword\".";
+        displaytext2 = "$displaytext2 \n To go next, say \"$nextword\". \nTo skip it, say \"$skipword\".;
         while (!gonext && (_recogtext.toLowerCase() != nextword.toLowerCase() && inflash)) {
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
           await Future.delayed(Duration(milliseconds: 200));
@@ -860,7 +871,7 @@ class _MyHomePageState extends State<MyHomePage> {
           await _listen();
           await _recognitionCompleter.future;
           if (_recogtext != "") {
-            displaytext2 = "$_recogtext \n To go next, say \"$nextword\".";
+            displaytext2 = "$_recogtext \n To go next, say \"$nextword\". \nTo skip it, say \"$skipword\".";
           }
 
           setState(() {});
@@ -882,7 +893,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // 残り2個以下は削除しない
       _textList.removeAt(selectedindex);
     }
-
+    gonext = true;
     if (!nextCompleter!.isCompleted) {
       nextCompleter?.complete();
     }

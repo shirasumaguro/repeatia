@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         localeId: _selectedLanguage, // 言語コードを指定
         listenFor: Duration(seconds: 8), // リスニングの時間を指定
-        pauseFor: Duration(seconds: 1), // 無音検出後の一時停止
+        pauseFor: Duration(seconds: 2), // 無音検出後の一時停止
         partialResults: true, // 部分的な結果も受け取る
       );
     } else {
@@ -898,6 +898,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _textList.removeAt(selectedindex);
     }
     gonext = true;
+    if (!_recognitionCompleter!.isCompleted) {
+      _recognitionCompleter.complete(); // 認識が完了したことをCompleterに通知
+    }
     if (!nextCompleter!.isCompleted) {
       nextCompleter?.complete();
     }

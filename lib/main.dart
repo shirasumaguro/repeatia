@@ -857,7 +857,10 @@ class _MyHomePageState extends State<MyHomePage> {
           _recognitionCompleter = Completer<void>();
           await _listen();
           await _recognitionCompleter.future;
-          displaytext2 = "$_recogtext \n To go next, say \"$nextword\".";
+          if (_recogtext != "") {
+            displaytext2 = "$_recogtext \n To go next, say \"$nextword\".";
+          }
+
           setState(() {});
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext 2 $_recogtext ");
         }

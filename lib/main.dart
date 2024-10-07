@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         localeId: _selectedLanguage, // 言語コードを指定
         listenFor: Duration(seconds: 11), // リスニングの時間を指定
-        pauseFor: Duration(seconds: 1), // 無音検出後の一時停止
+        pauseFor: Duration(seconds: 15), // 無音検出後の一時停止
         partialResults: true, // 部分的な結果も受け取る
       );
     } else {

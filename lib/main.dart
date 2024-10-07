@@ -864,7 +864,7 @@ class _MyHomePageState extends State<MyHomePage> {
           nextword = "next"; // デフォルトは英語にする場合
         }
         displaytext2 = "$displaytext2 \n To go next, say \"$nextword\". \nTo skip it, say \"$skipword\".";
-        while (!gonext && ((_recogtext.toLowerCase() != skipword.toLowerCase() || _recogtext.toLowerCase() != nextword.toLowerCase()) && inflash)) {
+        while (!gonext && ((_recogtext.toLowerCase() != skipword.toLowerCase() && _recogtext.toLowerCase() != nextword.toLowerCase()) && inflash)) {
           logger.logWithTimestamp("AAA in _startflash loop2 recogtext  $_recogtext ");
 
           await Future.delayed(Duration(milliseconds: 200));

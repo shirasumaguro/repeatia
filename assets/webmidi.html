@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIDI Test</title>
+</head>
+<body>
+  <button onclick="playNote(60, 100, 500)">Play C4 (ド)</button>
+  <button onclick="playNote(62, 100, 500)">Play D4 (レ)</button>
+  <button onclick="playNote(64, 100, 500)">Play E4 (ミ)</button>
+
+  <script>
+    let midiAccess = null;
+    let output = null;
+
+    // MIDIアクセスの初期化
+    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+
+    function onMIDISuccess(midi) {
+      midiAccess = midi;
+      const outputs = midiAccess.outputs.values();
+      for (let outputItem of outputs) {
+        output = outputItem; // 最初のMIDI出力デバイスを選択
+        console.log("MIDI output device selected:", output);
+      }
+    }
+
+    function onMIDIFailure() {
+      console.log("Could not access your MIDI devices.");
+    }
+
+    // ノートを鳴らす関数
+    function playNote(note, velocity, duration) {
+      if (output) {
+        // ノートオンメッセージ [144, ノート番号, ベロシティ]
+        output.send([0x90, note, velocity]);
+        // ノートオフメッセージをdurationミリ秒後に送る
+        setTimeout(() => {
+          output.send([0x80, note, 0]); // ノートオフ
+        }, duration);
+      } else {
+        console.log("No MIDI output device available.");
+      }
+    }
+  </script>
+</body>
+</html>
